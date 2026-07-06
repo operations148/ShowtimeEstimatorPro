@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { eq, and, ne } from 'drizzle-orm';
 import { deleteCookie } from 'hono/cookie';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   tenants,
   users,
@@ -25,7 +25,7 @@ import { createEmailProvider, createSmsProvider } from '@repo/provider-adapters'
 import { env } from '../env';
 
 export function createTenantRoutes(
-  db: BetterSQLite3Database<typeof schema>,
+  db: NodePgDatabase<typeof schema>,
   authService: AuthService,
   auditService?: AuditService,
 ): Hono {
@@ -46,12 +46,11 @@ export function createTenantRoutes(
     const { ownerEmail, ...rawTenantData } = parsed.data;
     const tenantData = { ...rawTenantData, name: stripHtml(rawTenantData.name) };
 
-    const existing = db
+    const existing = await db
       .select()
       .from(tenants)
       .where(eq(tenants.slug, tenantData.slug))
-      .limit(1)
-      .all();
+      .limit(1);
     if (existing.length > 0) {
       return c.json(
         { data: null, error: { code: 'CONFLICT', message: 'Slug already taken.' } },
@@ -59,12 +58,11 @@ export function createTenantRoutes(
       );
     }
 
-    const [tenant] = db.insert(tenants).values(tenantData).returning().all();
-    const [owner] = db
+    const [tenant] = await db.insert(tenants).values(tenantData).returning();
+    const [owner] = await db
       .insert(users)
       .values({ tenantId: tenant!.id, email: ownerEmail, role: 'owner' })
-      .returning()
-      .all();
+      .returning();
 
     const otpResult = await authService.requestOtp(ownerEmail, 'email');
     const otp = otpResult.ok ? { expiresAt: otpResult.value.expiresAt } : null;
@@ -75,12 +73,11 @@ export function createTenantRoutes(
   // GET /me — current tenant details (auth required)
   app.get('/me', requireAuth, async (c) => {
     const auth = c.get('auth');
-    const [tenant] = db
+    const [tenant] = await db
       .select()
       .from(tenants)
       .where(eq(tenants.id, auth.tenantId))
-      .limit(1)
-      .all();
+      .limit(1);
     if (!tenant) {
       return c.json({ data: null, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } }, 404);
     }
@@ -104,12 +101,11 @@ export function createTenantRoutes(
       ...(parsed.data.name !== undefined ? { name: stripHtml(parsed.data.name) } : {}),
     };
 
-    const [updated] = db
+    const [updated] = await db
       .update(tenants)
       .set({ ...sanitized, updatedAt: new Date() })
       .where(eq(tenants.id, auth.tenantId))
-      .returning()
-      .all();
+      .returning();
 
     return c.json({ data: updated, error: null });
   });
@@ -151,7 +147,7 @@ export function createTenantRoutes(
 
       // ── 1. Write audit entry BEFORE touching anything ──────────────────────
       // This entry must survive even if the subsequent deletes fail mid-way.
-      audit.logAction({
+      await audit.logAction({
         tenantId,
         actorId: userId,
         action: 'tenant.data_deletion',
@@ -162,38 +158,29 @@ export function createTenantRoutes(
       });
 
       // ── 2. Delete leaf data first, then work up to the tenant ─────────────
-      db.delete(submissions).where(eq(submissions.tenantId, tenantId)).run();
-      db.delete(analyticsEvents).where(eq(analyticsEvents.tenantId, tenantId)).run();
-      db.delete(serviceAreas).where(eq(serviceAreas.tenantId, tenantId)).run();
-      db.delete(pricingConfigs).where(eq(pricingConfigs.tenantId, tenantId)).run();
+      await db.delete(submissions).where(eq(submissions.tenantId, tenantId));
+      await db.delete(analyticsEvents).where(eq(analyticsEvents.tenantId, tenantId));
+      await db.delete(serviceAreas).where(eq(serviceAreas.tenantId, tenantId));
+      await db.delete(pricingConfigs).where(eq(pricingConfigs.tenantId, tenantId));
 
       // estimatorVersions → estimators (version rows reference estimator rows)
-      const tenantEstimatorIds = db
-        .select({ id: estimators.id })
-        .from(estimators)
-        .where(eq(estimators.tenantId, tenantId))
-        .all()
-        .map((r) => r.id);
+      const tenantEstimatorIds = (
+        await db.select({ id: estimators.id }).from(estimators).where(eq(estimators.tenantId, tenantId))
+      ).map((r) => r.id);
 
       for (const estId of tenantEstimatorIds) {
-        db.delete(estimatorVersions)
-          .where(eq(estimatorVersions.estimatorId, estId))
-          .run();
+        await db.delete(estimatorVersions).where(eq(estimatorVersions.estimatorId, estId));
       }
 
-      db.delete(estimators).where(eq(estimators.tenantId, tenantId)).run();
-      db.delete(subscriptions).where(eq(subscriptions.tenantId, tenantId)).run();
-      db.delete(auditLogs).where(eq(auditLogs.tenantId, tenantId)).run();
+      await db.delete(estimators).where(eq(estimators.tenantId, tenantId));
+      await db.delete(subscriptions).where(eq(subscriptions.tenantId, tenantId));
+      await db.delete(auditLogs).where(eq(auditLogs.tenantId, tenantId));
 
-      // Delete all users except the requesting user, then delete the tenant.
-      // Deleting the tenant cascades to the requesting user in Postgres (FK ON DELETE CASCADE).
-      // In SQLite dev the user row will be orphaned, which is acceptable since the session
-      // is invalidated immediately after this response.
-      db.delete(users)
-        .where(and(eq(users.tenantId, tenantId), ne(users.id, userId)))
-        .run();
+      // Delete all users except the requesting user, then delete the tenant
+      // (which cascades the requesting user via FK ON DELETE CASCADE).
+      await db.delete(users).where(and(eq(users.tenantId, tenantId), ne(users.id, userId)));
 
-      db.delete(tenants).where(eq(tenants.id, tenantId)).run();
+      await db.delete(tenants).where(eq(tenants.id, tenantId));
 
       // ── 3. Invalidate the session cookie ──────────────────────────────────
       deleteCookie(c, SESSION_COOKIE_NAME, { path: '/' });

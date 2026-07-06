@@ -2,11 +2,11 @@
  * Seed script — creates a demo tenant, owner user, sample estimator,
  * pricing config, and service area.
  *
- * Usage: tsx scripts/seed.ts  (from workspace root)
+ * Usage: tsx --env-file=apps/api/.env scripts/seed.ts
  * Or:    pnpm --filter api db:seed
  */
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
 import * as schema from '../apps/api/src/models/schema';
 import sampleQuestions from '../attachments/estimator-questions.sample.json';
@@ -14,17 +14,21 @@ import samplePricing from '../attachments/pricing-config.sample.json';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const DB_PATH =
-  process.env['DATABASE_URL'] ?? path.resolve(__dirname, '../apps/api/dev.db');
+const DB_URL = process.env['DIRECT_URL'] ?? process.env['DATABASE_URL'];
+if (!DB_URL) {
+  console.error('DIRECT_URL or DATABASE_URL must be set');
+  process.exit(1);
+}
+const needsSsl = !/localhost|127\.0\.0\.1/.test(DB_URL);
 
 async function main() {
-  const sqlite = new Database(DB_PATH);
-  const db = drizzle(sqlite, { schema });
+  const pool = new Pool({ connectionString: DB_URL, ssl: needsSsl ? { rejectUnauthorized: false } : undefined });
+  const db = drizzle(pool, { schema });
 
   console.log('🌱 Seeding database...');
 
   // 1. Create demo tenant
-  const [tenant] = db
+  const [tenant] = await db
     .insert(schema.tenants)
     .values({
       slug: 'demo-pools',
@@ -32,30 +36,19 @@ async function main() {
       notificationRecipients: ['owner@demo.test'],
       serviceAreaBehavior: 'block',
     })
-    .returning()
-    .all();
-
+    .returning();
   console.log(`  ✓ Tenant: ${tenant!.name} (${tenant!.id})`);
 
   // 2. Create owner user
-  const [owner] = db
+  const [owner] = await db
     .insert(schema.users)
-    .values({
-      tenantId: tenant!.id,
-      email: 'owner@demo.test',
-      name: 'Demo Owner',
-      role: 'owner',
-    })
-    .returning()
-    .all();
-
+    .values({ tenantId: tenant!.id, email: 'owner@demo.test', name: 'Demo Owner', role: 'owner' })
+    .returning();
   console.log(`  ✓ Owner: ${owner!.email} (${owner!.id})`);
 
-  // 3. Create estimator
-  // Fixed key so the marketing home (apps/widget/index.html) embeds a live demo
-  // that works immediately after seeding.
+  // 3. Create estimator — fixed key so the marketing home embeds a live demo.
   const publicKey = '26920aadc92ed1e98a274fdae4258cc7';
-  const [estimator] = db
+  const [estimator] = await db
     .insert(schema.estimators)
     .values({
       tenantId: tenant!.id,
@@ -64,9 +57,7 @@ async function main() {
       status: 'published',
       branding: { primaryColor: '#2563eb' },
     })
-    .returning()
-    .all();
-
+    .returning();
   console.log(`  ✓ Estimator: ${estimator!.title} (key: ${publicKey})`);
 
   // 4. Create version with questions
@@ -80,32 +71,21 @@ async function main() {
     order: idx,
   }));
 
-  const [version] = db
+  const [version] = await db
     .insert(schema.estimatorVersions)
-    .values({
-      estimatorId: estimator!.id,
-      version: 1,
-      questions,
-    })
-    .returning()
-    .all();
+    .values({ estimatorId: estimator!.id, version: 1, questions })
+    .returning();
 
-  db.update(schema.estimators)
+  await db
+    .update(schema.estimators)
     .set({ currentVersionId: version!.id })
-    .where(eq(schema.estimators.id, estimator!.id))
-    .run();
-
+    .where(eq(schema.estimators.id, estimator!.id));
   console.log(`  ✓ Version 1: ${questions.length} question(s) linked (${version!.id})`);
 
   // 5. Import pricing config
-  db.insert(schema.pricingConfigs)
-    .values({
-      tenantId: tenant!.id,
-      estimatorId: estimator!.id,
-      config: samplePricing,
-    })
-    .run();
-
+  await db
+    .insert(schema.pricingConfigs)
+    .values({ tenantId: tenant!.id, estimatorId: estimator!.id, config: samplePricing });
   console.log('  ✓ Pricing config imported');
 
   // 6. Import service area
@@ -117,35 +97,25 @@ async function main() {
     .filter((line) => line && line !== 'zip');
 
   if (zips.length > 0) {
-    db.insert(schema.serviceAreas)
-      .values(zips.map((zip) => ({ tenantId: tenant!.id, zip })))
-      .run();
+    await db.insert(schema.serviceAreas).values(zips.map((zip) => ({ tenantId: tenant!.id, zip })));
   }
-
   console.log(`  ✓ Service area: ${zips.length} zip codes`);
 
   // 7. Create mock subscription
-  db.insert(schema.subscriptions)
-    .values({
-      tenantId: tenant!.id,
-      externalId: 'mock_sub_seed',
-      status: 'active',
-      planId: 'estimator_pro',
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    })
-    .run();
-
+  await db.insert(schema.subscriptions).values({
+    tenantId: tenant!.id,
+    externalId: 'mock_sub_seed',
+    status: 'active',
+    planId: 'estimator_pro',
+    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  });
   console.log('  ✓ Subscription: active (mock)');
 
   console.log('\n✅ Seed complete!');
   console.log(`\n  Dashboard login: owner@demo.test`);
   console.log(`  Widget public key: ${publicKey}`);
-  console.log(
-    `  Widget embed:\n    <div id="estimator-widget" data-key="${publicKey}" data-api-url="http://localhost:4000/api/v1"></div>`,
-  );
-  console.log(`    <script src="http://localhost:5173/widget.iife.js"></script>\n`);
 
-  sqlite.close();
+  await pool.end();
 }
 
 main().catch((err) => {

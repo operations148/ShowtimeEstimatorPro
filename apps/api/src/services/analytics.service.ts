@@ -1,6 +1,6 @@
 import { sql, count, eq, and, gte, lte, isNotNull, inArray } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { analyticsEvents, submissions } from '../models/schema';
 import type * as schema from '../models/schema';
 import type { AnalyticsSummary } from '@repo/shared';
@@ -12,49 +12,48 @@ export interface SummaryOpts {
 }
 
 export class AnalyticsService {
-  constructor(private db: BetterSQLite3Database<typeof schema>) {}
+  constructor(private db: NodePgDatabase<typeof schema>) {}
 
   /**
-   * Record an analytics event (synchronous — fire-and-forget callers can ignore the return).
+   * Record an analytics event. Fire-and-forget callers can ignore the promise
+   * (attach a .catch to avoid unhandled rejections).
    */
-  track(event: {
+  async track(event: {
     tenantId: string;
     estimatorId: string;
     eventType: string;
     stepId?: string;
     sessionId: string;
-  }): void {
-    this.db.insert(analyticsEvents).values(event).run();
+  }): Promise<void> {
+    await this.db.insert(analyticsEvents).values(event);
   }
 
   /**
    * Compute aggregate analytics using SQL for a tenant, optionally filtered by
    * estimator and/or date range. All queries are tenant-scoped.
    */
-  getSummary(tenantId: string, opts?: SummaryOpts): AnalyticsSummary {
+  async getSummary(tenantId: string, opts?: SummaryOpts): Promise<AnalyticsSummary> {
     const subConds = this.subConditions(tenantId, opts);
     const evtConds = this.evtConditions(tenantId, opts);
 
     // ── 1. Totals ─────────────────────────────────────────────────────────────
-    const [totals] = this.db
+    const [totals] = await this.db
       .select({
         total: count(),
         totalRevenue: sql<number>`COALESCE(SUM((${submissions.estimateMin} + ${submissions.estimateMax}) / 2), 0)`,
         avgEstimate: sql<number>`COALESCE(CAST(AVG((${submissions.estimateMin} + ${submissions.estimateMax}) / 2) AS INTEGER), 0)`,
       })
       .from(submissions)
-      .where(and(...subConds))
-      .all();
+      .where(and(...subConds));
 
     const totalSubmissions = totals?.total ?? 0;
-    const totalEstimatedRevenue = totals?.totalRevenue ?? 0;
-    const averageEstimate = totals?.avgEstimate ?? 0;
+    const totalEstimatedRevenue = Number(totals?.totalRevenue ?? 0);
+    const averageEstimate = Number(totals?.avgEstimate ?? 0);
 
     // ── 2. Time series — GROUP BY calendar date ───────────────────────────────
-    // created_at is stored as Unix seconds (integer mode:'timestamp')
-    const dateExpr = sql<string>`strftime('%Y-%m-%d', datetime(${submissions.createdAt}, 'unixepoch'))`;
+    const dateExpr = sql<string>`to_char(${submissions.createdAt}, 'YYYY-MM-DD')`;
 
-    const timeSeriesRows = this.db
+    const timeSeriesRows = await this.db
       .select({
         date: dateExpr,
         count: count(),
@@ -63,29 +62,19 @@ export class AnalyticsService {
       .from(submissions)
       .where(and(...subConds))
       .groupBy(dateExpr)
-      .orderBy(dateExpr)
-      .all();
+      .orderBy(dateExpr);
 
-    const submissionsOverTime = timeSeriesRows.map((r) => ({
-      date: r.date,
-      count: r.count,
-    }));
-
-    const revenueOverTime = timeSeriesRows.map((r) => ({
-      date: r.date,
-      revenue: r.revenue,
-    }));
+    const submissionsOverTime = timeSeriesRows.map((r) => ({ date: r.date, count: Number(r.count) }));
+    const revenueOverTime = timeSeriesRows.map((r) => ({ date: r.date, revenue: Number(r.revenue) }));
 
     // ── 3. Drop-off by step ──────────────────────────────────────────────────
-    // Conditional COUNT so a single pass over analytics_events yields both
-    // step_view and step_complete counts per stepId.
     const stepConds: SQL<unknown>[] = [
       ...evtConds,
       isNotNull(analyticsEvents.stepId),
       inArray(analyticsEvents.eventType, ['step_view', 'step_complete']),
     ];
 
-    const dropOffRows = this.db
+    const dropOffRows = await this.db
       .select({
         stepId: analyticsEvents.stepId,
         views: sql<number>`COUNT(CASE WHEN ${analyticsEvents.eventType} = 'step_view' THEN 1 END)`,
@@ -94,20 +83,19 @@ export class AnalyticsService {
       .from(analyticsEvents)
       .where(and(...stepConds))
       .groupBy(analyticsEvents.stepId)
-      .orderBy(analyticsEvents.stepId)
-      .all();
+      .orderBy(analyticsEvents.stepId);
 
     const dropOffByStep = dropOffRows
       .filter((r) => r.stepId !== null)
       .map((r) => {
-        const views = r.views;
-        const completions = r.completions;
+        const views = Number(r.views);
+        const completions = Number(r.completions);
         const dropOffRate = views > 0 ? Math.round(((views - completions) / views) * 100) / 100 : 0;
         return { stepId: r.stepId as string, views, completions, dropOffRate };
       });
 
     return {
-      totalSubmissions,
+      totalSubmissions: Number(totalSubmissions),
       totalEstimatedRevenue,
       averageEstimate,
       submissionsOverTime,

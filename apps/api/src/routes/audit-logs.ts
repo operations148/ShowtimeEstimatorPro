@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { AuditService } from '../services/audit.service';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { db as realDb } from '../models/db';
 import type * as schema from '../models/schema';
 import { PAGINATION_DEFAULT_LIMIT, PAGINATION_MAX_LIMIT } from '@repo/shared';
 
-export function createAuditLogRoutes(db: BetterSQLite3Database<typeof schema>): Hono {
+export function createAuditLogRoutes(db: NodePgDatabase<typeof schema>): Hono {
   const app = new Hono();
   const auditService = new AuditService(db);
 
@@ -23,7 +23,7 @@ export function createAuditLogRoutes(db: BetterSQLite3Database<typeof schema>): 
    *   limit        — page size (default 25, max 100)
    *   offset       — page offset (default 0)
    */
-  app.get('/', requireAuth, requireRole('owner', 'admin'), (c) => {
+  app.get('/', requireAuth, requireRole('owner', 'admin'), async (c) => {
     const auth = c.get('auth');
 
     const actorId = c.req.query('actorId');
@@ -67,7 +67,7 @@ export function createAuditLogRoutes(db: BetterSQLite3Database<typeof schema>): 
     );
     const offset = Math.max(0, parseInt(offsetParam ?? '0', 10) || 0);
 
-    const result = auditService.queryLogs(auth.tenantId, {
+    const result = await auditService.queryLogs(auth.tenantId, {
       actorId: actorId ?? undefined,
       action: action ?? undefined,
       resourceType: resourceType ?? undefined,

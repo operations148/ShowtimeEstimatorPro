@@ -11,7 +11,7 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { subscriptions } from '../models/schema';
 import type * as schema from '../models/schema';
 import { db as realDb } from '../models/db';
@@ -22,7 +22,7 @@ const simulateWebhookSchema = z.object({
   status: z.enum(['active', 'trialing', 'past_due', 'canceled', 'unpaid']),
 });
 
-export function createDevRoutes(db: BetterSQLite3Database<typeof schema>): Hono {
+export function createDevRoutes(db: NodePgDatabase<typeof schema>): Hono {
   const app = new Hono();
 
   app.post('/simulate-webhook', async (c) => {
@@ -39,36 +39,32 @@ export function createDevRoutes(db: BetterSQLite3Database<typeof schema>): Hono 
     const now = new Date();
     const currentPeriodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    const [existing] = db
+    const [existing] = await db
       .select({ id: subscriptions.id, externalId: subscriptions.externalId })
       .from(subscriptions)
       .where(eq(subscriptions.tenantId, tenantId))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (existing) {
-      db.update(subscriptions)
+      await db
+        .update(subscriptions)
         .set({ status, currentPeriodEnd, updatedAt: now })
-        .where(eq(subscriptions.tenantId, tenantId))
-        .run();
+        .where(eq(subscriptions.tenantId, tenantId));
     } else {
-      db.insert(subscriptions)
-        .values({
-          tenantId,
-          externalId: `dev_sub_${Date.now()}`,
-          status,
-          planId: SUBSCRIPTION_PLAN_ID,
-          currentPeriodEnd,
-        })
-        .run();
+      await db.insert(subscriptions).values({
+        tenantId,
+        externalId: `dev_sub_${Date.now()}`,
+        status,
+        planId: SUBSCRIPTION_PLAN_ID,
+        currentPeriodEnd,
+      });
     }
 
-    const [updated] = db
+    const [updated] = await db
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.tenantId, tenantId))
-      .limit(1)
-      .all();
+      .limit(1);
 
     return c.json({ data: updated ?? null, error: null });
   });

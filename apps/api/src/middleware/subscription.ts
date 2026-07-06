@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { createMiddleware } from 'hono/factory';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { subscriptions } from '../models/schema';
 import type * as schema from '../models/schema';
 import type { AuthContext } from './auth';
@@ -21,7 +21,7 @@ const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
  * The middleware is a no-op when no auth context is present (unauthenticated
  * routes are handled separately by requireAuth).
  */
-export function createSubscriptionEnforcement(db: BetterSQLite3Database<typeof schema>) {
+export function createSubscriptionEnforcement(db: NodePgDatabase<typeof schema>) {
   return createMiddleware<{ Variables: { auth: AuthContext } }>(async (c, next) => {
     const auth = c.get('auth');
     if (!auth) {
@@ -29,12 +29,11 @@ export function createSubscriptionEnforcement(db: BetterSQLite3Database<typeof s
       return;
     }
 
-    const [sub] = db
+    const [sub] = await db
       .select({ status: subscriptions.status })
       .from(subscriptions)
       .where(eq(subscriptions.tenantId, auth.tenantId))
-      .limit(1)
-      .all();
+      .limit(1);
 
     // No subscription row → allow (new tenant or implicit trial period)
     if (!sub) {

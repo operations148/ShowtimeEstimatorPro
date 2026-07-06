@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { eq, and } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { estimators, estimatorVersions, tenants } from '../models/schema';
 import type * as schema from '../models/schema';
 import { db as realDb } from '../models/db';
@@ -15,7 +15,7 @@ const DEFAULT_LEAD_CONFIG = {
   optional: ['zip'],
 } as const;
 
-export function createWidgetRoutes(db: BetterSQLite3Database<typeof schema>): Hono {
+export function createWidgetRoutes(db: NodePgDatabase<typeof schema>): Hono {
   const app = new Hono();
 
   /**
@@ -25,15 +25,14 @@ export function createWidgetRoutes(db: BetterSQLite3Database<typeof schema>): Ho
    * Only published estimators are returned. Draft estimators return 404 so they
    * cannot be previewed through the production widget path.
    */
-  app.get('/:publicKey', (c) => {
+  app.get('/:publicKey', async (c) => {
     const publicKey = c.req.param('publicKey');
 
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.publicKey, publicKey), eq(estimators.status, 'published')))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(
@@ -47,16 +46,17 @@ export function createWidgetRoutes(db: BetterSQLite3Database<typeof schema>): Ho
 
     // Fetch current version with questions
     const questions = est.currentVersionId
-      ? (db
-          .select()
-          .from(estimatorVersions)
-          .where(eq(estimatorVersions.id, est.currentVersionId))
-          .limit(1)
-          .all()[0]?.questions ?? [])
+      ? (
+          await db
+            .select()
+            .from(estimatorVersions)
+            .where(eq(estimatorVersions.id, est.currentVersionId))
+            .limit(1)
+        )[0]?.questions ?? []
       : [];
 
     // Fetch tenant for service area policy, display name, and org branding
-    const [tenant] = db
+    const [tenant] = await db
       .select({
         name: tenants.name,
         serviceAreaBehavior: tenants.serviceAreaBehavior,
@@ -64,8 +64,7 @@ export function createWidgetRoutes(db: BetterSQLite3Database<typeof schema>): Ho
       })
       .from(tenants)
       .where(eq(tenants.id, est.tenantId))
-      .limit(1)
-      .all();
+      .limit(1);
 
     // Merge branding: per-estimator branding wins, falling back to the tenant's
     // org-level branding (logo/color/font set once in the dashboard).

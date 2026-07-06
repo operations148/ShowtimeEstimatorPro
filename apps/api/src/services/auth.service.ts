@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import * as jose from 'jose';
 import { eq, and, gt, desc, isNull } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { otpCodes, users } from '../models/schema';
 import type * as schema from '../models/schema';
 import { env } from '../env';
@@ -24,7 +24,7 @@ import {
 
 export class AuthService {
   constructor(
-    private db: BetterSQLite3Database<typeof schema>,
+    private db: NodePgDatabase<typeof schema>,
     private emailProvider: EmailProvider,
     private smsProvider: SmsProvider,
   ) {}
@@ -38,11 +38,10 @@ export class AuthService {
   ): Promise<Result<{ expiresAt: Date }, { code: string; message: string }>> {
     // Check rate limit: max N requests per hour for this identifier
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const recentCodes = this.db
+    const recentCodes = await this.db
       .select()
       .from(otpCodes)
-      .where(and(eq(otpCodes.identifier, identifier), gt(otpCodes.createdAt, oneHourAgo)))
-      .all();
+      .where(and(eq(otpCodes.identifier, identifier), gt(otpCodes.createdAt, oneHourAgo)));
 
     if (recentCodes.length >= OTP_RATE_LIMIT_PER_HOUR) {
       return err({ code: 'RATE_LIMITED', message: 'Too many OTP requests. Try again later.' });
@@ -54,7 +53,7 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + env.OTP_EXPIRY_MINUTES * 60 * 1000);
 
     // Store hashed code (never store plaintext)
-    this.db.insert(otpCodes).values({ identifier, codeHash, expiresAt }).run();
+    await this.db.insert(otpCodes).values({ identifier, codeHash, expiresAt });
 
     // Send via appropriate channel
     const templateVars = { CODE: code, MINUTES: String(env.OTP_EXPIRY_MINUTES) };
@@ -87,7 +86,7 @@ export class AuthService {
     // Find the most-recent, non-expired, unused OTP for this identifier.
     // Using desc(createdAt) ensures we pick the latest code if multiple exist.
     // isNull(usedAt) prevents replaying an already-consumed code.
-    const [otpRecord] = this.db
+    const [otpRecord] = await this.db
       .select()
       .from(otpCodes)
       .where(
@@ -98,8 +97,7 @@ export class AuthService {
         ),
       )
       .orderBy(desc(otpCodes.createdAt))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!otpRecord) {
       return err({ code: 'INVALID_OTP', message: 'No valid OTP found. Request a new code.' });
@@ -117,7 +115,7 @@ export class AuthService {
       // round-trip where the user sees MAX_ATTEMPTS (401) then LOCKED (423).
       const shouldLock = newAttempts >= env.OTP_MAX_ATTEMPTS;
 
-      this.db
+      await this.db
         .update(otpCodes)
         .set(
           shouldLock
@@ -127,8 +125,7 @@ export class AuthService {
               }
             : { attempts: newAttempts },
         )
-        .where(eq(otpCodes.id, otpRecord.id))
-        .run();
+        .where(eq(otpCodes.id, otpRecord.id));
 
       return err(
         shouldLock
@@ -138,15 +135,14 @@ export class AuthService {
     }
 
     // Mark as used — prevents replay
-    this.db.update(otpCodes).set({ usedAt: now }).where(eq(otpCodes.id, otpRecord.id)).run();
+    await this.db.update(otpCodes).set({ usedAt: now }).where(eq(otpCodes.id, otpRecord.id));
 
     // Look up user (supports both email and phone identifiers)
-    const [user] = this.db
+    const [user] = await this.db
       .select()
       .from(users)
       .where(eq(users.email, identifier))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!user) {
       return err({ code: 'USER_NOT_FOUND', message: 'No account found for this identifier.' });

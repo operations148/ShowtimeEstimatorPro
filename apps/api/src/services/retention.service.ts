@@ -1,5 +1,5 @@
 import { eq, and, lt } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { submissions } from '../models/schema';
 import type * as schema from '../models/schema';
 
@@ -47,7 +47,7 @@ import type * as schema from '../models/schema';
  * an `Authorization: Bearer <secret>` header to prevent unauthorized invocation.
  */
 export class RetentionService {
-  constructor(private db: BetterSQLite3Database<typeof schema>) {}
+  constructor(private db: NodePgDatabase<typeof schema>) {}
 
   /**
    * Hard-delete all submissions for `tenantId` that are older than `retentionDays`.
@@ -56,14 +56,14 @@ export class RetentionService {
    * @param retentionDays - Maximum age in days. Submissions older than this are deleted.
    * @returns Number of submission rows deleted.
    */
-  purgeExpired(tenantId: string, retentionDays: number): number {
+  async purgeExpired(tenantId: string, retentionDays: number): Promise<number> {
     const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
 
-    const result = this.db
+    const deleted = await this.db
       .delete(submissions)
       .where(and(eq(submissions.tenantId, tenantId), lt(submissions.createdAt, cutoff)))
-      .run();
+      .returning({ id: submissions.id });
 
-    return result.changes;
+    return deleted.length;
   }
 }

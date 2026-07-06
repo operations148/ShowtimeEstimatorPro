@@ -1,7 +1,7 @@
 import { eq, and, gte, lte, count, desc } from 'drizzle-orm';
 import { logger } from '../lib/logger';
 import type { SQL } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { auditLogs } from '../models/schema';
 import type * as schema from '../models/schema';
 import { PAGINATION_DEFAULT_LIMIT, PAGINATION_MAX_LIMIT } from '@repo/shared';
@@ -46,28 +46,24 @@ export interface QueryLogsResult {
 }
 
 export class AuditService {
-  constructor(private db: BetterSQLite3Database<typeof schema>) {}
+  constructor(private db: NodePgDatabase<typeof schema>) {}
 
   /**
-   * Append a single audit log entry. Synchronous, fire-and-forget safe.
-   * Never throws — errors are swallowed to avoid disrupting the caller.
+   * Append a single audit log entry. Fire-and-forget safe: never rejects —
+   * errors are swallowed so they can't disrupt the caller's request flow.
    */
-  logAction(params: LogActionParams): void {
+  async logAction(params: LogActionParams): Promise<void> {
     try {
-      this.db
-        .insert(auditLogs)
-        .values({
-          tenantId: params.tenantId,
-          actorId: params.actorId,
-          action: params.action,
-          resourceType: params.resourceType,
-          resourceId: params.resourceId,
-          ipAddress: params.ipAddress ?? null,
-          userAgent: params.userAgent ?? null,
-        })
-        .run();
+      await this.db.insert(auditLogs).values({
+        tenantId: params.tenantId,
+        actorId: params.actorId,
+        action: params.action,
+        resourceType: params.resourceType,
+        resourceId: params.resourceId,
+        ipAddress: params.ipAddress ?? null,
+        userAgent: params.userAgent ?? null,
+      });
     } catch (err) {
-      // Audit logging must not break the primary request flow.
       logger.error({ err }, 'AuditService: failed to write log entry');
     }
   }
@@ -76,7 +72,7 @@ export class AuditService {
    * Query audit logs for a tenant with optional filters and pagination.
    * Always tenant-scoped — callers cannot access another tenant's logs.
    */
-  queryLogs(tenantId: string, filters: QueryLogsFilters = {}): QueryLogsResult {
+  async queryLogs(tenantId: string, filters: QueryLogsFilters = {}): Promise<QueryLogsResult> {
     const limit = Math.min(filters.limit ?? PAGINATION_DEFAULT_LIMIT, PAGINATION_MAX_LIMIT);
     const offset = filters.offset ?? 0;
 
@@ -89,21 +85,16 @@ export class AuditService {
 
     const where = and(...conds);
 
-    const [countRow] = this.db
-      .select({ total: count() })
-      .from(auditLogs)
-      .where(where)
-      .all();
-    const total = countRow?.total ?? 0;
+    const [countRow] = await this.db.select({ total: count() }).from(auditLogs).where(where);
+    const total = Number(countRow?.total ?? 0);
 
-    const logs = this.db
+    const logs = (await this.db
       .select()
       .from(auditLogs)
       .where(where)
       .orderBy(desc(auditLogs.timestamp))
       .limit(limit)
-      .offset(offset)
-      .all() as AuditLogEntry[];
+      .offset(offset)) as AuditLogEntry[];
 
     return { logs, total, limit, offset };
   }

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq, and } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { users } from '../models/schema';
 import type * as schema from '../models/schema';
 import { createUserSchema, updateUserRoleSchema } from '@repo/shared';
@@ -11,7 +11,7 @@ import { AuditService } from '../services/audit.service';
 import { db as realDb } from '../models/db';
 
 export function createUserRoutes(
-  db: BetterSQLite3Database<typeof schema>,
+  db: NodePgDatabase<typeof schema>,
   auditService?: AuditService,
 ): Hono {
   const audit = auditService ?? new AuditService(db);
@@ -24,7 +24,7 @@ export function createUserRoutes(
   // GET / — list users in the caller's tenant
   app.get('/', requireAuth, async (c) => {
     const auth = c.get('auth');
-    const rows = db.select().from(users).where(eq(users.tenantId, auth.tenantId)).all();
+    const rows = await db.select().from(users).where(eq(users.tenantId, auth.tenantId));
     return c.json({ data: rows, error: null });
   });
 
@@ -40,11 +40,10 @@ export function createUserRoutes(
       );
     }
 
-    const [user] = db
+    const [user] = await db
       .insert(users)
       .values({ ...parsed.data, tenantId: auth.tenantId })
-      .returning()
-      .all();
+      .returning();
 
     return c.json({ data: user, error: null }, 201);
   });
@@ -70,12 +69,11 @@ export function createUserRoutes(
       );
     }
 
-    const [existing] = db
+    const [existing] = await db
       .select()
       .from(users)
       .where(and(eq(users.id, userId), eq(users.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!existing) {
       return c.json(
@@ -84,12 +82,11 @@ export function createUserRoutes(
       );
     }
 
-    const [updated] = db
+    const [updated] = await db
       .update(users)
       .set({ role: parsed.data.role, updatedAt: new Date() })
       .where(and(eq(users.id, userId), eq(users.tenantId, auth.tenantId)))
-      .returning()
-      .all();
+      .returning();
 
     return c.json({ data: updated, error: null });
   });
@@ -106,12 +103,11 @@ export function createUserRoutes(
       );
     }
 
-    const [existing] = db
+    const [existing] = await db
       .select()
       .from(users)
       .where(and(eq(users.id, userId), eq(users.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!existing) {
       return c.json(
@@ -120,9 +116,9 @@ export function createUserRoutes(
       );
     }
 
-    db.delete(users)
-      .where(and(eq(users.id, userId), eq(users.tenantId, auth.tenantId)))
-      .run();
+    await db
+      .delete(users)
+      .where(and(eq(users.id, userId), eq(users.tenantId, auth.tenantId)));
 
     return c.json({ data: { deleted: true }, error: null });
   });

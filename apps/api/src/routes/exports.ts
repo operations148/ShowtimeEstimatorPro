@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { ExportService } from '../services/export.service';
 import { requireAuth } from '../middleware/auth';
 import { createSubscriptionEnforcement } from '../middleware/subscription';
@@ -9,7 +9,7 @@ import { db as realDb } from '../models/db';
 import type * as schema from '../models/schema';
 
 export function createExportRoutes(
-  db: BetterSQLite3Database<typeof schema>,
+  db: NodePgDatabase<typeof schema>,
   auditService?: AuditService,
 ): Hono {
   const app = new Hono();
@@ -20,7 +20,7 @@ export function createExportRoutes(
   app.use('*', requireAuth);
   app.use('*', createSubscriptionEnforcement(db));
 
-  app.get('/submissions', requireAuth, auditLog(audit, 'export.download', 'export'), (c) => {
+  app.get('/submissions', requireAuth, auditLog(audit, 'export.download', 'export'), async (c) => {
     const auth = c.get('auth');
     const estimatorId = c.req.query('estimatorId');
     const fromParam = c.req.query('from');
@@ -52,7 +52,7 @@ export function createExportRoutes(
       to = d;
     }
 
-    const result = exportService.exportSubmissions(auth.tenantId, {
+    const result = await exportService.exportSubmissions(auth.tenantId, {
       estimatorId: estimatorId ?? undefined,
       from,
       to,

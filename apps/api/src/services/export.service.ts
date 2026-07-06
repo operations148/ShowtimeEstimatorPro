@@ -1,6 +1,6 @@
 import { eq, and, gte, lte } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { submissions } from '../models/schema';
 import type * as schema from '../models/schema';
 import { CSV_EXPORT_MAX_ROWS } from '@repo/shared';
@@ -14,7 +14,7 @@ export interface ExportOpts {
 }
 
 export class ExportService {
-  constructor(private db: BetterSQLite3Database<typeof schema>) {}
+  constructor(private db: NodePgDatabase<typeof schema>) {}
 
   /**
    * Generate a CSV string from submissions for a given tenant.
@@ -24,23 +24,22 @@ export class ExportService {
    * - All string values are properly CSV-escaped.
    * - Enforces CSV_EXPORT_MAX_ROWS; returns an error result if exceeded.
    */
-  exportSubmissions(
+  async exportSubmissions(
     tenantId: string,
     opts?: ExportOpts,
-  ): Result<string, { code: string; message: string }> {
+  ): Promise<Result<string, { code: string; message: string }>> {
     const conds: SQL<unknown>[] = [eq(submissions.tenantId, tenantId)];
     if (opts?.estimatorId) conds.push(eq(submissions.estimatorId, opts.estimatorId));
     if (opts?.from) conds.push(gte(submissions.createdAt, opts.from));
     if (opts?.to) conds.push(lte(submissions.createdAt, opts.to));
 
     // Fetch one extra row so we can detect overflow without a separate COUNT query.
-    const rows = this.db
+    const rows = await this.db
       .select()
       .from(submissions)
       .where(and(...conds))
       .orderBy(submissions.createdAt)
-      .limit(CSV_EXPORT_MAX_ROWS + 1)
-      .all();
+      .limit(CSV_EXPORT_MAX_ROWS + 1);
 
     if (rows.length > CSV_EXPORT_MAX_ROWS) {
       return err({

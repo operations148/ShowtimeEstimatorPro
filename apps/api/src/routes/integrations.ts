@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { setCookie, getCookie } from 'hono/cookie';
 import { randomUUID } from 'crypto';
 import { eq } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { tenants } from '../models/schema';
 import type * as schema from '../models/schema';
 import type { TenantIntegrations } from '@repo/shared';
@@ -39,17 +39,17 @@ function redactIntegrations(integrations: TenantIntegrations | null | undefined)
   };
 }
 
-export function createIntegrationRoutes(db: BetterSQLite3Database<typeof schema>): Hono {
+export function createIntegrationRoutes(db: NodePgDatabase<typeof schema>): Hono {
   const app = new Hono();
   const dispatch = new IntegrationDispatchService();
 
-  const loadTenant = (tenantId: string) =>
-    db.select().from(tenants).where(eq(tenants.id, tenantId)).limit(1).all()[0];
+  const loadTenant = async (tenantId: string) =>
+    (await db.select().from(tenants).where(eq(tenants.id, tenantId)).limit(1))[0];
 
   // GET / — current integration config (secrets redacted)
-  app.get('/', requireAuth, requireRole('owner', 'admin'), (c) => {
+  app.get('/', requireAuth, requireRole('owner', 'admin'), async (c) => {
     const auth = c.get('auth');
-    const tenant = loadTenant(auth.tenantId);
+    const tenant = await loadTenant(auth.tenantId);
     if (!tenant) {
       return c.json({ data: null, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } }, 404);
     }
@@ -65,7 +65,7 @@ export function createIntegrationRoutes(db: BetterSQLite3Database<typeof schema>
       return c.json({ data: null, error: { code: 'VALIDATION', message: parsed.error.message } }, 400);
     }
 
-    const tenant = loadTenant(auth.tenantId);
+    const tenant = await loadTenant(auth.tenantId);
     if (!tenant) {
       return c.json({ data: null, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } }, 404);
     }
@@ -93,14 +93,14 @@ export function createIntegrationRoutes(db: BetterSQLite3Database<typeof schema>
         : {}),
     };
 
-    db.update(tenants).set({ integrations: next, updatedAt: new Date() }).where(eq(tenants.id, auth.tenantId)).run();
+    await db.update(tenants).set({ integrations: next, updatedAt: new Date() }).where(eq(tenants.id, auth.tenantId));
     return c.json({ data: redactIntegrations(next), error: null });
   });
 
   // POST /test — dispatch a sample lead to whatever is currently enabled
   app.post('/test', requireAuth, requireRole('owner', 'admin'), async (c) => {
     const auth = c.get('auth');
-    const tenant = loadTenant(auth.tenantId);
+    const tenant = await loadTenant(auth.tenantId);
     if (!tenant) {
       return c.json({ data: null, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } }, 404);
     }
@@ -204,7 +204,7 @@ export function createIntegrationRoutes(db: BetterSQLite3Database<typeof schema>
       logger.warn({ err }, 'Google Sheets connect: userinfo fetch failed');
     }
 
-    const tenant = loadTenant(auth.tenantId);
+    const tenant = await loadTenant(auth.tenantId);
     const current: TenantIntegrations = tenant?.integrations ?? {};
     const next: TenantIntegrations = {
       ...current,
@@ -216,21 +216,21 @@ export function createIntegrationRoutes(db: BetterSQLite3Database<typeof schema>
         connectedEmail,
       },
     };
-    db.update(tenants).set({ integrations: next, updatedAt: new Date() }).where(eq(tenants.id, auth.tenantId)).run();
+    await db.update(tenants).set({ integrations: next, updatedAt: new Date() }).where(eq(tenants.id, auth.tenantId));
 
     return c.redirect(`${settingsUrl}?gsheets_connected=1`);
   });
 
   // POST /google-sheets/disconnect — clear stored tokens
-  app.post('/google-sheets/disconnect', requireAuth, requireRole('owner', 'admin'), (c) => {
+  app.post('/google-sheets/disconnect', requireAuth, requireRole('owner', 'admin'), async (c) => {
     const auth = c.get('auth');
-    const tenant = loadTenant(auth.tenantId);
+    const tenant = await loadTenant(auth.tenantId);
     if (!tenant) {
       return c.json({ data: null, error: { code: 'NOT_FOUND', message: 'Tenant not found.' } }, 404);
     }
     const current: TenantIntegrations = tenant.integrations ?? {};
     const next: TenantIntegrations = { ...current, googleSheets: { enabled: false } };
-    db.update(tenants).set({ integrations: next, updatedAt: new Date() }).where(eq(tenants.id, auth.tenantId)).run();
+    await db.update(tenants).set({ integrations: next, updatedAt: new Date() }).where(eq(tenants.id, auth.tenantId));
     return c.json({ data: redactIntegrations(next), error: null });
   });
 

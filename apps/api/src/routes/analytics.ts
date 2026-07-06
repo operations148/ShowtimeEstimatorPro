@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { analyticsEventSchema } from '@repo/shared';
 import { AnalyticsService } from '../services/analytics.service';
 import { requireAuth } from '../middleware/auth';
@@ -8,7 +8,7 @@ import { db as realDb } from '../models/db';
 import type * as schema from '../models/schema';
 
 export function createAnalyticsRoutes(
-  db: BetterSQLite3Database<typeof schema>,
+  db: NodePgDatabase<typeof schema>,
 ): Hono {
   const app = new Hono();
   const analyticsService = new AnalyticsService(db);
@@ -26,16 +26,18 @@ export function createAnalyticsRoutes(
     }
 
     // tenantId is resolved from the body; production should look it up from the estimator
-    analyticsService.track({
-      tenantId: (body as Record<string, unknown>).tenantId as string ?? 'unknown',
-      ...parsed.data,
-    });
+    void analyticsService
+      .track({
+        tenantId: (body as Record<string, unknown>).tenantId as string ?? 'unknown',
+        ...parsed.data,
+      })
+      .catch(() => {});
 
     return c.json({ data: { tracked: true }, error: null });
   });
 
   // Get analytics summary (authenticated)
-  app.get('/summary', requireAuth, (c) => {
+  app.get('/summary', requireAuth, async (c) => {
     const auth = c.get('auth');
     const estimatorId = c.req.query('estimatorId');
     const fromParam = c.req.query('from');
@@ -67,7 +69,7 @@ export function createAnalyticsRoutes(
       to = d;
     }
 
-    const summary = analyticsService.getSummary(auth.tenantId, {
+    const summary = await analyticsService.getSummary(auth.tenantId, {
       estimatorId: estimatorId ?? undefined,
       from,
       to,

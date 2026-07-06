@@ -34,7 +34,7 @@ export async function validateStartup(): Promise<void> {
 
   // ── 2. Database connectivity ─────────────────────────────────────────────
   try {
-    db.get(sql`SELECT 1`);
+    await db.execute(sql`SELECT 1`);
     logger.info({ url: env.DATABASE_URL }, 'startup: database connectivity OK');
   } catch (err) {
     logger.fatal({ err, url: env.DATABASE_URL }, 'startup: database connection failed — cannot start');

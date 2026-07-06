@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type * as schema from '../models/schema';
 import { ServiceAreaService } from '../services/service-area.service';
 import { requireAuth } from '../middleware/auth';
@@ -8,7 +8,7 @@ import { AuditService } from '../services/audit.service';
 import { db as realDb } from '../models/db';
 
 export function createServiceAreaRoutes(
-  db: BetterSQLite3Database<typeof schema>,
+  db: NodePgDatabase<typeof schema>,
   auditService?: AuditService,
 ): Hono {
   const service = new ServiceAreaService(db);
@@ -16,9 +16,9 @@ export function createServiceAreaRoutes(
   const app = new Hono();
 
   // GET / — list all configured zips for the tenant
-  app.get('/', requireAuth, (c) => {
+  app.get('/', requireAuth, async (c) => {
     const auth = c.get('auth');
-    const zips = service.listZips(auth.tenantId);
+    const zips = await service.listZips(auth.tenantId);
     return c.json({ data: { zips, count: zips.length }, error: null });
   });
 
@@ -60,7 +60,7 @@ export function createServiceAreaRoutes(
     }
 
     const zips = parseCsvZips(csvText);
-    const result = service.importZips(auth.tenantId, zips);
+    const result = await service.importZips(auth.tenantId, zips);
 
     if (!result.ok) {
       return c.json({ data: null, error: result.error }, 422);
@@ -70,9 +70,9 @@ export function createServiceAreaRoutes(
   });
 
   // DELETE / — clear all zips (tenant reverts to "open to all")
-  app.delete('/', requireAuth, auditLog(audit, 'service_area.clear', 'service_area'), (c) => {
+  app.delete('/', requireAuth, auditLog(audit, 'service_area.clear', 'service_area'), async (c) => {
     const auth = c.get('auth');
-    service.clearZips(auth.tenantId);
+    await service.clearZips(auth.tenantId);
     return c.json({ data: { cleared: true }, error: null });
   });
 

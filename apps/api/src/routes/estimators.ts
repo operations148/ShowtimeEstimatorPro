@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { eq, and, desc } from 'drizzle-orm';
 import * as crypto from 'crypto';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { estimators, estimatorVersions } from '../models/schema';
 import type * as schema from '../models/schema';
 import {
@@ -20,7 +20,7 @@ import { env } from '../env';
 import { PricingService } from '../services/pricing.service';
 
 export function createEstimatorRoutes(
-  db: BetterSQLite3Database<typeof schema>,
+  db: NodePgDatabase<typeof schema>,
   pricing?: PricingService,
   auditService?: AuditService,
 ): Hono {
@@ -33,14 +33,13 @@ export function createEstimatorRoutes(
   app.use('*', createSubscriptionEnforcement(db));
 
   // ── GET / — list all estimators for tenant ───────────────────────────────
-  app.get('/', requireAuth, (c) => {
+  app.get('/', requireAuth, async (c) => {
     const auth = c.get('auth');
-    const rows = db
+    const rows = await db
       .select()
       .from(estimators)
       .where(eq(estimators.tenantId, auth.tenantId))
-      .orderBy(desc(estimators.createdAt))
-      .all();
+      .orderBy(desc(estimators.createdAt));
     return c.json({ data: rows, error: null });
   });
 
@@ -58,7 +57,7 @@ export function createEstimatorRoutes(
 
     const publicKey = crypto.randomBytes(16).toString('hex');
 
-    const [estimator] = db
+    const [estimator] = await db
       .insert(estimators)
       .values({
         ...parsed.data,
@@ -67,34 +66,30 @@ export function createEstimatorRoutes(
         publicKey,
         branding: parsed.data.branding ?? {},
       })
-      .returning()
-      .all();
+      .returning();
 
-    const [version] = db
+    const [version] = await db
       .insert(estimatorVersions)
       .values({ estimatorId: estimator!.id, version: 1, questions: [] })
-      .returning()
-      .all();
+      .returning();
 
-    const [linked] = db
+    const [linked] = await db
       .update(estimators)
       .set({ currentVersionId: version!.id })
       .where(eq(estimators.id, estimator!.id))
-      .returning()
-      .all();
+      .returning();
 
     return c.json({ data: { ...linked, questions: [] }, error: null }, 201);
   });
 
   // ── GET /:id — estimator detail with current version's questions ─────────
-  app.get('/:id', requireAuth, (c) => {
+  app.get('/:id', requireAuth, async (c) => {
     const auth = c.get('auth');
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, c.req.param('id')), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(
@@ -104,12 +99,13 @@ export function createEstimatorRoutes(
     }
 
     const questions = est.currentVersionId
-      ? (db
-          .select()
-          .from(estimatorVersions)
-          .where(eq(estimatorVersions.id, est.currentVersionId))
-          .limit(1)
-          .all()[0]?.questions ?? [])
+      ? (
+          await db
+            .select()
+            .from(estimatorVersions)
+            .where(eq(estimatorVersions.id, est.currentVersionId))
+            .limit(1)
+        )[0]?.questions ?? []
       : [];
 
     return c.json({ data: { ...est, questions }, error: null });
@@ -132,12 +128,11 @@ export function createEstimatorRoutes(
       ...(parsed.data.title !== undefined ? { title: stripHtml(parsed.data.title) } : {}),
     };
 
-    const [updated] = db
+    const [updated] = await db
       .update(estimators)
       .set({ ...sanitized, updatedAt: new Date() })
       .where(and(eq(estimators.id, c.req.param('id')), eq(estimators.tenantId, auth.tenantId)))
-      .returning()
-      .all();
+      .returning();
 
     if (!updated) {
       return c.json(
@@ -162,12 +157,11 @@ export function createEstimatorRoutes(
       );
     }
 
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, id), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est || !est.currentVersionId) {
       return c.json(
@@ -180,57 +174,54 @@ export function createEstimatorRoutes(
 
     // Published version is locked — auto-fork a new draft version
     if (est.status === 'published') {
-      const existingVersionNums = db
+      const existingVersionNums = await db
         .select({ v: estimatorVersions.version })
         .from(estimatorVersions)
-        .where(eq(estimatorVersions.estimatorId, id))
-        .all();
+        .where(eq(estimatorVersions.estimatorId, id));
       const nextNum =
         existingVersionNums.length > 0
           ? Math.max(...existingVersionNums.map((r) => r.v)) + 1
           : 2;
 
       const currentQuestions =
-        db
-          .select()
-          .from(estimatorVersions)
-          .where(eq(estimatorVersions.id, est.currentVersionId))
-          .limit(1)
-          .all()[0]?.questions ?? [];
+        (
+          await db
+            .select()
+            .from(estimatorVersions)
+            .where(eq(estimatorVersions.id, est.currentVersionId))
+            .limit(1)
+        )[0]?.questions ?? [];
 
-      const [newVersion] = db
+      const [newVersion] = await db
         .insert(estimatorVersions)
         .values({ estimatorId: id, version: nextNum, questions: currentQuestions })
-        .returning()
-        .all();
+        .returning();
 
-      db.update(estimators)
+      await db
+        .update(estimators)
         .set({ currentVersionId: newVersion!.id, status: 'draft', updatedAt: new Date() })
-        .where(eq(estimators.id, id))
-        .run();
+        .where(eq(estimators.id, id));
 
       targetVersionId = newVersion!.id;
     }
 
-    const [updatedVersion] = db
+    const [updatedVersion] = await db
       .update(estimatorVersions)
       .set({ questions: parsed.data })
       .where(eq(estimatorVersions.id, targetVersionId))
-      .returning()
-      .all();
+      .returning();
 
     return c.json({ data: updatedVersion, error: null });
   });
 
   // ── POST /:id/publish — publish and lock current version ─────────────────
-  app.post('/:id/publish', requireAuth, auditLog(audit, 'estimator.publish', 'estimator'), (c) => {
+  app.post('/:id/publish', requireAuth, auditLog(audit, 'estimator.publish', 'estimator'), async (c) => {
     const auth = c.get('auth');
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, c.req.param('id')), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(
@@ -239,25 +230,23 @@ export function createEstimatorRoutes(
       );
     }
 
-    const [updated] = db
+    const [updated] = await db
       .update(estimators)
       .set({ status: 'published', updatedAt: new Date() })
       .where(eq(estimators.id, est.id))
-      .returning()
-      .all();
+      .returning();
 
     return c.json({ data: updated, error: null });
   });
 
   // ── POST /:id/unpublish — revert to draft ────────────────────────────────
-  app.post('/:id/unpublish', requireAuth, auditLog(audit, 'estimator.unpublish', 'estimator'), (c) => {
+  app.post('/:id/unpublish', requireAuth, auditLog(audit, 'estimator.unpublish', 'estimator'), async (c) => {
     const auth = c.get('auth');
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, c.req.param('id')), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(
@@ -266,25 +255,23 @@ export function createEstimatorRoutes(
       );
     }
 
-    const [updated] = db
+    const [updated] = await db
       .update(estimators)
       .set({ status: 'draft', updatedAt: new Date() })
       .where(eq(estimators.id, est.id))
-      .returning()
-      .all();
+      .returning();
 
     return c.json({ data: updated, error: null });
   });
 
   // ── DELETE /:id — hard delete ────────────────────────────────────────────
-  app.delete('/:id', requireAuth, auditLog(audit, 'estimator.delete', 'estimator'), (c) => {
+  app.delete('/:id', requireAuth, auditLog(audit, 'estimator.delete', 'estimator'), async (c) => {
     const auth = c.get('auth');
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, c.req.param('id')), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(
@@ -293,24 +280,23 @@ export function createEstimatorRoutes(
       );
     }
 
-    db.delete(estimators)
-      .where(and(eq(estimators.id, est.id), eq(estimators.tenantId, auth.tenantId)))
-      .run();
+    await db
+      .delete(estimators)
+      .where(and(eq(estimators.id, est.id), eq(estimators.tenantId, auth.tenantId)));
 
     return c.json({ data: { deleted: true }, error: null });
   });
 
   // ── POST /:id/versions — explicitly fork a new draft version ────────────
-  app.post('/:id/versions', requireAuth, auditLog(audit, 'estimator.fork_version', 'estimator'), (c) => {
+  app.post('/:id/versions', requireAuth, auditLog(audit, 'estimator.fork_version', 'estimator'), async (c) => {
     const auth = c.get('auth');
     const id = c.req.param('id');
 
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, id), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est || !est.currentVersionId) {
       return c.json(
@@ -319,49 +305,47 @@ export function createEstimatorRoutes(
       );
     }
 
-    const existingVersionNums = db
+    const existingVersionNums = await db
       .select({ v: estimatorVersions.version })
       .from(estimatorVersions)
-      .where(eq(estimatorVersions.estimatorId, id))
-      .all();
+      .where(eq(estimatorVersions.estimatorId, id));
     const nextNum =
       existingVersionNums.length > 0
         ? Math.max(...existingVersionNums.map((r) => r.v)) + 1
         : 2;
 
     const currentQuestions =
-      db
-        .select()
-        .from(estimatorVersions)
-        .where(eq(estimatorVersions.id, est.currentVersionId))
-        .limit(1)
-        .all()[0]?.questions ?? [];
+      (
+        await db
+          .select()
+          .from(estimatorVersions)
+          .where(eq(estimatorVersions.id, est.currentVersionId))
+          .limit(1)
+      )[0]?.questions ?? [];
 
-    const [newVersion] = db
+    const [newVersion] = await db
       .insert(estimatorVersions)
       .values({ estimatorId: id, version: nextNum, questions: currentQuestions })
-      .returning()
-      .all();
+      .returning();
 
-    db.update(estimators)
+    await db
+      .update(estimators)
       .set({ currentVersionId: newVersion!.id, status: 'draft', updatedAt: new Date() })
-      .where(eq(estimators.id, id))
-      .run();
+      .where(eq(estimators.id, id));
 
     return c.json({ data: newVersion, error: null }, 201);
   });
 
   // ── GET /:id/versions — list all versions ───────────────────────────────
-  app.get('/:id/versions', requireAuth, (c) => {
+  app.get('/:id/versions', requireAuth, async (c) => {
     const auth = c.get('auth');
     const id = c.req.param('id');
 
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, id), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(
@@ -370,25 +354,23 @@ export function createEstimatorRoutes(
       );
     }
 
-    const versions = db
+    const versions = await db
       .select()
       .from(estimatorVersions)
       .where(eq(estimatorVersions.estimatorId, id))
-      .orderBy(desc(estimatorVersions.version))
-      .all();
+      .orderBy(desc(estimatorVersions.version));
 
     return c.json({ data: versions, error: null });
   });
 
   // ── GET /:id/embed-code — return HTML embed snippet ──────────────────────
-  app.get('/:id/embed-code', requireAuth, (c) => {
+  app.get('/:id/embed-code', requireAuth, async (c) => {
     const auth = c.get('auth');
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, c.req.param('id')), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(
@@ -408,14 +390,13 @@ export function createEstimatorRoutes(
   });
 
   // ── GET /:id/pricing — get current pricing config ────────────────────────
-  app.get('/:id/pricing', requireAuth, (c) => {
+  app.get('/:id/pricing', requireAuth, async (c) => {
     const auth = c.get('auth');
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, c.req.param('id')), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(
@@ -424,7 +405,7 @@ export function createEstimatorRoutes(
       );
     }
 
-    const result = pricingService.getConfig(auth.tenantId, est.id);
+    const result = await pricingService.getConfig(auth.tenantId, est.id);
     if (!result.ok) {
       return c.json({ data: null, error: result.error }, 404);
     }
@@ -434,12 +415,11 @@ export function createEstimatorRoutes(
   // ── PUT /:id/pricing — save / replace pricing config ────────────────────
   app.put('/:id/pricing', requireAuth, auditLog(audit, 'estimator.update_pricing', 'estimator'), async (c) => {
     const auth = c.get('auth');
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(and(eq(estimators.id, c.req.param('id')), eq(estimators.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(

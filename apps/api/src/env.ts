@@ -3,7 +3,10 @@ import { z } from 'zod';
 const envSchema = z
   .object({
     // ── Database ────────────────────────────────────────────────────────────
-    DATABASE_URL: z.string().min(1).default('./dev.db'),
+    // Postgres connection string. In production use the Supabase transaction
+    // pooler (port 6543); DIRECT_URL (port 5432) is used only for migrations.
+    DATABASE_URL: z.string().min(1),
+    DIRECT_URL: z.string().optional(),
 
     // ── Session ─────────────────────────────────────────────────────────────
     SESSION_SECRET: z.string().min(32),

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { subscriptions } from '../models/schema';
 import type * as schema from '../models/schema';
 import { requireAuth } from '../middleware/auth';
@@ -14,7 +14,7 @@ import { logger } from '../lib/logger';
 import { SUBSCRIPTION_PLAN_ID } from '@repo/shared';
 
 export function createBillingRoutes(
-  db: BetterSQLite3Database<typeof schema>,
+  db: NodePgDatabase<typeof schema>,
   paymentProvider: PaymentProvider,
   auditService?: AuditService,
 ): Hono {
@@ -22,14 +22,13 @@ export function createBillingRoutes(
   const app = new Hono();
 
   // ── GET /subscription — return current subscription status ──────────────────
-  app.get('/subscription', requireAuth, (c) => {
+  app.get('/subscription', requireAuth, async (c) => {
     const auth = c.get('auth');
-    const [sub] = db
+    const [sub] = await db
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.tenantId, auth.tenantId))
-      .limit(1)
-      .all();
+      .limit(1);
 
     return c.json({ data: sub ?? null, error: null });
   });
@@ -87,43 +86,40 @@ export function createBillingRoutes(
 
         // Upsert: if a row already exists for this externalId, update it;
         // otherwise insert a new one.
-        const [existing] = db
+        const [existing] = await db
           .select({ id: subscriptions.id })
           .from(subscriptions)
           .where(eq(subscriptions.externalId, data.subscriptionId))
-          .limit(1)
-          .all();
+          .limit(1);
 
         if (existing) {
-          db.update(subscriptions)
+          await db
+            .update(subscriptions)
             .set({ status: data.status, currentPeriodEnd: periodEnd, updatedAt: new Date() })
-            .where(eq(subscriptions.externalId, data.subscriptionId))
-            .run();
+            .where(eq(subscriptions.externalId, data.subscriptionId));
         } else {
-          db.insert(subscriptions)
-            .values({
-              tenantId: data.tenantId,
-              externalId: data.subscriptionId,
-              status: data.status,
-              planId,
-              currentPeriodEnd: periodEnd,
-            })
-            .run();
+          await db.insert(subscriptions).values({
+            tenantId: data.tenantId,
+            externalId: data.subscriptionId,
+            status: data.status,
+            planId,
+            currentPeriodEnd: periodEnd,
+          });
         }
       } else if (type === 'subscription.updated') {
-        db.update(subscriptions)
+        await db
+          .update(subscriptions)
           .set({
             status: data.status,
             currentPeriodEnd: new Date(data.currentPeriodEnd),
             updatedAt: new Date(),
           })
-          .where(eq(subscriptions.externalId, data.subscriptionId))
-          .run();
+          .where(eq(subscriptions.externalId, data.subscriptionId));
       } else if (type === 'subscription.deleted') {
-        db.update(subscriptions)
+        await db
+          .update(subscriptions)
           .set({ status: 'canceled', updatedAt: new Date() })
-          .where(eq(subscriptions.externalId, data.subscriptionId))
-          .run();
+          .where(eq(subscriptions.externalId, data.subscriptionId));
       }
       // Unknown event types are silently accepted (forward-compatible).
 
@@ -140,12 +136,11 @@ export function createBillingRoutes(
   // ── POST /portal — redirect to customer billing portal ───────────────────────
   app.post('/portal', requireAuth, auditLog(audit, 'billing.portal', 'subscription'), async (c) => {
     const auth = c.get('auth');
-    const [sub] = db
+    const [sub] = await db
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.tenantId, auth.tenantId))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!sub) {
       return c.json(

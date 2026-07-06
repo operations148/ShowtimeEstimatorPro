@@ -14,7 +14,7 @@ healthRoutes.get('/', async (c) => {
 
   let dbStatus: 'connected' | 'disconnected' = 'connected';
   try {
-    db.get(sql`SELECT 1`);
+    await db.execute(sql`SELECT 1`);
   } catch {
     dbStatus = 'disconnected';
   }

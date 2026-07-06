@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq, and, desc } from 'drizzle-orm';
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { estimators, submissions, tenants } from '../models/schema';
 import type * as schema from '../models/schema';
 import { createSubmissionSchema } from '@repo/shared';
@@ -22,7 +22,7 @@ import { AuditService } from '../services/audit.service';
 import { db as realDb } from '../models/db';
 
 export function createSubmissionRoutes(
-  db: BetterSQLite3Database<typeof schema>,
+  db: NodePgDatabase<typeof schema>,
   emailProvider?: EmailProvider,
   auditService?: AuditService,
 ): Hono {
@@ -64,12 +64,11 @@ export function createSubmissionRoutes(
     }
 
     // Look up estimator by public key
-    const [est] = db
+    const [est] = await db
       .select()
       .from(estimators)
       .where(eq(estimators.publicKey, parsed.data.estimatorPublicKey))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!est) {
       return c.json(
@@ -81,21 +80,22 @@ export function createSubmissionRoutes(
     // Service area check — only when the lead provided a zip. Zip is optional,
     // so a submission without one is never gated.
     const leadZip = parsed.data.lead.zip?.trim();
-    const isServed = leadZip ? serviceAreaService.isZipServed(est.tenantId, leadZip) : true;
-    const [tenant] = db
+    const isServed = leadZip ? await serviceAreaService.isZipServed(est.tenantId, leadZip) : true;
+    const [tenant] = await db
       .select()
       .from(tenants)
       .where(eq(tenants.id, est.tenantId))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (leadZip && !isServed && tenant?.serviceAreaBehavior === 'block') {
-      analyticsService.track({
-        tenantId: est.tenantId,
-        estimatorId: est.id,
-        eventType: 'gated_out',
-        sessionId: (body as Record<string, unknown>).sessionId as string ?? 'unknown',
-      });
+      void analyticsService
+        .track({
+          tenantId: est.tenantId,
+          estimatorId: est.id,
+          eventType: 'gated_out',
+          sessionId: (body as Record<string, unknown>).sessionId as string ?? 'unknown',
+        })
+        .catch(() => {});
 
       return c.json(
         {
@@ -112,7 +112,7 @@ export function createSubmissionRoutes(
     // known base/size/addon keys — no reliance on hardcoded step IDs.
     const answers = parsed.data.answers as Record<string, unknown>;
 
-    const pricingConfigResult = pricingService.getConfig(est.tenantId, est.id);
+    const pricingConfigResult = await pricingService.getConfig(est.tenantId, est.id);
     let pricingInput: PricingInput = { baseKey: '', sizeKey: '', addonKeys: [] };
 
     if (pricingConfigResult.ok) {
@@ -147,7 +147,7 @@ export function createSubmissionRoutes(
     };
 
     // Persist submission
-    const [submission] = db
+    const [submission] = await db
       .insert(submissions)
       .values({
         tenantId: est.tenantId,
@@ -163,16 +163,17 @@ export function createSubmissionRoutes(
         currency: estimate.currency,
         serviceAreaValid: isServed,
       })
-      .returning()
-      .all();
+      .returning();
 
     // Track submit event (fire-and-forget)
-    analyticsService.track({
-      tenantId: est.tenantId,
-      estimatorId: est.id,
-      eventType: 'submit',
-      sessionId: (body as Record<string, unknown>).sessionId as string ?? 'unknown',
-    });
+    void analyticsService
+      .track({
+        tenantId: est.tenantId,
+        estimatorId: est.id,
+        eventType: 'submit',
+        sessionId: (body as Record<string, unknown>).sessionId as string ?? 'unknown',
+      })
+      .catch(() => {});
 
     // Notify tenant recipients (fire-and-forget)
     const recipients = tenant?.notificationRecipients as string[] | undefined;
@@ -226,21 +227,20 @@ export function createSubmissionRoutes(
   });
 
   // GET / — list submissions (authenticated, tenant-scoped)
-  app.get('/', requireAuth, (c) => {
+  app.get('/', requireAuth, async (c) => {
     const auth = c.get('auth');
-    const rows = db
+    const rows = await db
       .select()
       .from(submissions)
       .where(eq(submissions.tenantId, auth.tenantId))
-      .orderBy(desc(submissions.createdAt))
-      .all();
+      .orderBy(desc(submissions.createdAt));
     return c.json({ data: rows, error: null });
   });
 
   // GET /export — GDPR right-of-access JSON export (authenticated, tenant-scoped).
   // Returns all submissions for this tenant as a JSON array suitable for data portability.
   // Registered before DELETE /:id to avoid Hono treating "export" as an :id segment.
-  app.get('/export', requireAuth, auditLog(audit, 'export.download_json', 'export'), (c) => {
+  app.get('/export', requireAuth, auditLog(audit, 'export.download_json', 'export'), async (c) => {
     const auth = c.get('auth');
     const estimatorId = c.req.query('estimatorId');
     const fromParam = c.req.query('from');
@@ -278,7 +278,7 @@ export function createSubmissionRoutes(
       ));
     }
 
-    const rows = query.orderBy(desc(submissions.createdAt)).all();
+    const rows = await query.orderBy(desc(submissions.createdAt));
 
     // Apply date filters after fetch (simpler than conditional Drizzle chain)
     const filtered = rows.filter((r) => {
@@ -297,14 +297,13 @@ export function createSubmissionRoutes(
   });
 
   // DELETE /:id — hard delete (authenticated, tenant-scoped)
-  app.delete('/:id', requireAuth, auditLog(audit, 'submission.delete', 'submission'), (c) => {
+  app.delete('/:id', requireAuth, auditLog(audit, 'submission.delete', 'submission'), async (c) => {
     const auth = c.get('auth');
-    const [existing] = db
+    const [existing] = await db
       .select()
       .from(submissions)
       .where(and(eq(submissions.id, c.req.param('id')), eq(submissions.tenantId, auth.tenantId)))
-      .limit(1)
-      .all();
+      .limit(1);
 
     if (!existing) {
       return c.json(
@@ -313,9 +312,9 @@ export function createSubmissionRoutes(
       );
     }
 
-    db.delete(submissions)
-      .where(and(eq(submissions.id, existing.id), eq(submissions.tenantId, auth.tenantId)))
-      .run();
+    await db
+      .delete(submissions)
+      .where(and(eq(submissions.id, existing.id), eq(submissions.tenantId, auth.tenantId)));
 
     return c.json({ data: { deleted: true }, error: null });
   });

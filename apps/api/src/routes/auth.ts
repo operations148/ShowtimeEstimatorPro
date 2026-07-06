@@ -187,12 +187,9 @@ export function createAuthRoutes(service: AuthService): Hono {
     const secret = new TextEncoder().encode(env.SESSION_SECRET);
 
     // Check if user already has an account
-    const existingUser = db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1)
-      .all()[0];
+    const existingUser = (
+      await db.select().from(users).where(eq(users.email, email)).limit(1)
+    )[0];
 
     if (existingUser) {
       // Issue full session cookie
@@ -257,7 +254,7 @@ export function createAuthRoutes(service: AuthService): Hono {
     }
 
     // Guard: user already exists
-    const existingUser = db.select().from(users).where(eq(users.email, email)).limit(1).all()[0];
+    const existingUser = (await db.select().from(users).where(eq(users.email, email)).limit(1))[0];
     if (existingUser) {
       return c.json(
         { data: null, error: { code: 'CONFLICT', message: 'An account with this email already exists.' } },
@@ -266,12 +263,9 @@ export function createAuthRoutes(service: AuthService): Hono {
     }
 
     // Guard: slug taken
-    const existingTenant = db
-      .select()
-      .from(tenants)
-      .where(eq(tenants.slug, slug.trim()))
-      .limit(1)
-      .all()[0];
+    const existingTenant = (
+      await db.select().from(tenants).where(eq(tenants.slug, slug.trim())).limit(1)
+    )[0];
     if (existingTenant) {
       return c.json(
         { data: null, error: { code: 'CONFLICT', message: 'That URL slug is already taken.' } },
@@ -280,17 +274,15 @@ export function createAuthRoutes(service: AuthService): Hono {
     }
 
     // Create tenant + owner user
-    const [tenant] = db
+    const [tenant] = await db
       .insert(tenants)
       .values({ name: stripHtml(name.trim()), slug: slug.trim() })
-      .returning()
-      .all();
+      .returning();
 
-    const [owner] = db
+    const [owner] = await db
       .insert(users)
       .values({ tenantId: tenant!.id, email, role: 'owner' })
-      .returning()
-      .all();
+      .returning();
 
     // Issue full session cookie
     const sessionToken = await new SignJWT({
