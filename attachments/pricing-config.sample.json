@@ -1,0 +1,35 @@
+{
+  "currency": "USD",
+  "base": {
+    "Pool Only": {
+      "Regular 15x30": [48000, 58000],
+      "Medium 17x35": [58000, 72000],
+      "Large 20x40": [72000, 95000]
+    },
+    "Pool & Spa": {
+      "Regular 15x30": [62000, 74000],
+      "Medium 17x35": [74000, 90000],
+      "Large 20x40": [90000, 120000]
+    }
+  },
+  "addons": {
+    "Sheet Fall": [1800, 3200],
+    "Natural Rock": [3500, 7000],
+    "Bubblers": [900, 1800],
+    "Deck Jets": [1200, 2400],
+    "Water Bowls": [1500, 3000],
+    "Fire Water Bowls": [3500, 6500],
+    "Salt Water": [1200, 2200],
+    "LED Color Lighting": [1500, 3500],
+    "Pool Automation": [2500, 5000],
+    "Umbrella Sleeve": [400, 900],
+    "Glass Trim Tile": [3000, 8000],
+    "Hand Rail": [600, 1400],
+    "Shimmer Quartz": [2500, 5000],
+    "PebbleTec": [4000, 8000],
+    "Concrete": [4000, 9000],
+    "Yes": [3500, 7000],
+    "e3 / Eco Technology": [1500, 3000]
+  },
+  "minMaxMode": "sum_ranges"
+}

@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #0a1628;
+  color: #e2e8f0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0a1628; }
+::-webkit-scrollbar-thumb { background: #1e3048; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a4060; }
+
+/* ── Dark-theme overrides for legacy Tailwind gray/white classes ── */
+/* Backgrounds */
+.bg-white          { background-color: #111d2e !important; }
+.bg-gray-50        { background-color: #0d1a2a !important; }
+.bg-gray-100       { background-color: #162030 !important; }
+.bg-gray-200       { background-color: #1e3048 !important; }
+
+/* Text */
+.text-gray-900     { color: #f1f5f9 !important; }
+.text-gray-800     { color: #e2e8f0 !important; }
+.text-gray-700     { color: #cbd5e1 !important; }
+.text-gray-600     { color: #94a3b8 !important; }
+.text-gray-500     { color: #64748b !important; }
+.text-gray-400     { color: #475569 !important; }
+
+/* Borders */
+.border-gray-100   { border-color: #162030 !important; }
+.border-gray-200   { border-color: #1e3048 !important; }
+.border-gray-300   { border-color: #2a4060 !important; }
+
+/* Inputs */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
+  background-color: #0d1a2a !important;
+  color: #f1f5f9 !important;
+  border-color: #2a4060 !important;
+}
+input::placeholder,
+textarea::placeholder { color: #475569 !important; }
+
+/* Table */
+table { color: #e2e8f0; }
+thead tr { background-color: #0d1a2a !important; }
+
+/* Hover states that use gray */
+.hover\:bg-gray-50:hover  { background-color: #162030 !important; }
+.hover\:bg-gray-100:hover { background-color: #1e3048 !important; }
+
+/* Brand overrides */
+.bg-brand-50  { background-color: rgba(0,207,255,0.08) !important; }
+.text-brand-700 { color: #00cfff !important; }
+.text-brand-800 { color: #00cfff !important; }
+.border-brand-200 { border-color: rgba(0,207,255,0.25) !important; }
+.hover\:border-brand-300:hover { border-color: rgba(0,207,255,0.4) !important; }
+.hover\:shadow-sm:hover { box-shadow: 0 0 0 1px rgba(0,207,255,0.15) !important; }
+
+/* Animate pulse in dark */
+.animate-pulse .bg-gray-200 { background-color: #1e3048 !important; }
+.animate-pulse .bg-gray-100 { background-color: #162030 !important; }

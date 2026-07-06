@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — EstimatorPro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080f1a; --bg2: #0d1828; --bg3: #111f35;
+      --cyan: #06b6d4; --cyan-dark: #0891b2;
+      --text: #f0f6ff; --text-muted: #8ba3be; --text-dim: #4a6580;
+      --border: rgba(255,255,255,0.07); --card: rgba(13,24,40,0.8);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 64px;
+      background: rgba(8,15,26,0.88); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 9px; }
+    .nav-logo-mark { width: 28px; height: 28px; background: linear-gradient(135deg, var(--cyan), #0284c7); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: white; box-shadow: 0 0 16px rgba(6,182,212,0.4); }
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-ghost { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 8px; transition: color 0.15s, background 0.15s; }
+    .btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+    .btn-primary { background: linear-gradient(135deg, var(--cyan), var(--cyan-dark)); color: white; text-decoration: none; font-size: 14px; font-weight: 600; padding: 8px 18px; border-radius: 8px; transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s; box-shadow: 0 0 20px rgba(6,182,212,0.3); display: inline-block; border: none; cursor: pointer; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 24px rgba(6,182,212,0.45); }
+    .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-muted); text-decoration: none; font-size: 15px; font-weight: 500; padding: 12px 30px; border-radius: 10px; transition: border-color 0.15s, color 0.15s; }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+    .page-header {
+      padding: 140px 20px 80px;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .page-header::before {
+      content: ''; position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 500px;
+      background: radial-gradient(ellipse at center, rgba(6,182,212,0.12) 0%, transparent 68%);
+      pointer-events: none;
+    }
+    .page-header h1 { font-size: clamp(34px, 5vw, 60px); font-weight: 900; letter-spacing: -0.04em; line-height: 1.06; margin-bottom: 18px; position: relative; z-index: 1; }
+    .page-header h1 em { font-style: normal; background: linear-gradient(135deg, var(--cyan) 0%, #38bdf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-header p { font-size: 18px; color: var(--text-muted); max-width: 480px; margin: 0 auto 40px; line-height: 1.72; position: relative; z-index: 1; }
+
+    .toggle-wrap { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 64px; position: relative; z-index: 1; }
+    .toggle-label { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+    .toggle-label.active { color: var(--text); }
+    .toggle { position: relative; width: 48px; height: 26px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track { position: absolute; inset: 0; background: var(--bg3); border: 1px solid var(--border); border-radius: 999px; cursor: pointer; transition: background 0.2s; }
+    .toggle input:checked + .toggle-track { background: rgba(6,182,212,0.3); border-color: rgba(6,182,212,0.5); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: var(--text-muted); border-radius: 50%; transition: transform 0.2s, background 0.2s; pointer-events: none; }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(22px); background: var(--cyan); }
+    .save-badge { background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25); color: var(--cyan); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; letter-spacing: 0.06em; }
+
+    .plans-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; max-width: 1060px; margin: 0 auto; padding: 0 20px 100px; }
+
+    .plan-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 36px 30px 32px; display: flex; flex-direction: column; gap: 0;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative; backdrop-filter: blur(8px);
+    }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+    .plan-card.featured {
+      border-color: rgba(6,182,212,0.4);
+      background: linear-gradient(180deg, rgba(6,182,212,0.07) 0%, var(--card) 100%);
+      box-shadow: 0 0 0 1px rgba(6,182,212,0.15), 0 24px 60px rgba(6,182,212,0.12);
+    }
+    .plan-badge {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--cyan), var(--cyan-dark));
+      color: white; font-size: 11px; font-weight: 700; padding: 4px 16px;
+      border-radius: 999px; letter-spacing: 0.06em; white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(6,182,212,0.4);
+    }
+    .plan-name { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+    .plan-price { font-size: 52px; font-weight: 900; letter-spacing: -0.04em; line-height: 1; margin-bottom: 6px; }
+    .plan-price sup { font-size: 22px; font-weight: 700; vertical-align: top; margin-top: 12px; margin-right: 2px; color: var(--text-muted); }
+    .plan-price span.per { font-size: 16px; font-weight: 500; color: var(--text-muted); }
+    .plan-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.6; }
+    .plan-divider { height: 1px; background: var(--border); margin-bottom: 24px; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 11px; flex: 1; margin-bottom: 28px; }
+    .plan-features li { font-size: 14px; color: var(--text-muted); display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+    .plan-features li::before { content: '✓'; color: var(--cyan); font-weight: 700; font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+    .plan-features li.dim { color: var(--text-dim); }
+    .plan-features li.dim::before { color: var(--text-dim); content: '–'; }
+    .plan-btn { display: block; text-align: center; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+    .plan-btn-primary { background: linear-gradient(135deg, var(--cyan), var(--cyan-dark)); color: white; box-shadow: 0 0 20px rgba(6,182,212,0.3); }
+    .plan-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(6,182,212,0.45); }
+    .plan-btn-outline { border: 1.5px solid var(--border); color: var(--text-muted); }
+    .plan-btn-outline:hover { border-color: rgba(255,255,255,0.18); color: var(--text); background: rgba(255,255,255,0.04); }
+
+    .faq-section { max-width: 720px; margin: 0 auto; padding: 0 20px 100px; }
+    .faq-title { font-size: clamp(24px, 3vw, 36px); font-weight: 800; letter-spacing: -0.03em; text-align: center; margin-bottom: 48px; }
+    .faq-item { border-top: 1px solid var(--border); padding: 22px 0; }
+    .faq-item:last-child { border-bottom: 1px solid var(--border); }
+    .faq-q { font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; user-select: none; }
+    .faq-q:hover { color: var(--cyan); }
+    .faq-icon { font-size: 20px; color: var(--text-dim); flex-shrink: 0; transition: transform 0.2s; }
+    .faq-item.open .faq-icon { transform: rotate(45deg); color: var(--cyan); }
+    .faq-a { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin-top: 14px; display: none; }
+    .faq-item.open .faq-a { display: block; }
+
+    .guarantee-bar { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 48px 20px; text-align: center; margin-bottom: 0; }
+    .guarantee-bar h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .guarantee-bar p { font-size: 14px; color: var(--text-muted); max-width: 480px; margin: 0 auto; }
+
+    footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 56px 40px 32px; }
+    .footer-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 52px; margin-bottom: 40px; }
+    .footer-brand p { font-size: 14px; color: var(--text-muted); margin-top: 14px; line-height: 1.65; max-width: 260px; }
+    .footer-col-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.15s; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-bottom { max-width: 1100px; margin: 0 auto; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-dim); }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .plans-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark">EP</div>
+    EstimatorPro
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/pricing.html" class="active">Pricing</a></li>
+    <li><a href="/contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="http://localhost:3000/login" class="btn-ghost">Log in</a>
+    <a href="http://localhost:3000/signup" class="btn-primary">Get Started Free</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>Simple, <em>Transparent</em> Pricing</h1>
+  <p>Start free. Scale as your business grows. No hidden fees, no long-term contracts.</p>
+
+  <div class="toggle-wrap">
+    <span class="toggle-label active" id="lbl-monthly">Monthly</span>
+    <label class="toggle">
+      <input type="checkbox" id="billing-toggle" onchange="toggleBilling()" />
+      <div class="toggle-track"></div>
+      <div class="toggle-thumb"></div>
+    </label>
+    <span class="toggle-label" id="lbl-annual">Annual</span>
+    <span class="save-badge">SAVE 20%</span>
+  </div>
+</div>
+
+<div class="plans-grid">
+
+  <!-- Starter -->
+  <div class="plan-card">
+    <div class="plan-name">Starter</div>
+    <div class="plan-price"><sup>$</sup><span class="price-val" data-monthly="0" data-annual="0">0</span><span class="per">/mo</span></div>
+    <div class="plan-desc">Everything you need to launch your first estimator and start capturing leads.</div>
+    <div class="plan-divider"></div>
+    <ul class="plan-features">
+      <li>1 active estimator</li>
+      <li>Up to 50 submissions/mo</li>
+      <li>Email lead notifications</li>
+      <li>Basic branding (logo + color)</li>
+      <li>CSV export</li>
+      <li class="dim">Service-area gating</li>
+      <li class="dim">Analytics dashboard</li>
+      <li class="dim">Priority support</li>
+    </ul>
+    <a href="http://localhost:3000/signup" class="plan-btn plan-btn-outline">Get started free</a>
+  </div>
+
+  <!-- Pro (featured) -->
+  <div class="plan-card featured">
+    <div class="plan-badge">MOST POPULAR</div>
+    <div class="plan-name">Pro</div>
+    <div class="plan-price"><sup>$</sup><span class="price-val" data-monthly="79" data-annual="63">79</span><span class="per">/mo</span></div>
+    <div class="plan-desc">For growing businesses that need multiple estimators and deeper insights.</div>
+    <div class="plan-divider"></div>
+    <ul class="plan-features">
+      <li>Up to 5 active estimators</li>
+      <li>Unlimited submissions</li>
+      <li>Email + SMS notifications</li>
+      <li>Full branding + custom fonts</li>
+      <li>CSV + JSON export</li>
+      <li>Service-area gating</li>
+      <li>Analytics dashboard</li>
+      <li class="dim">Priority support</li>
+    </ul>
+    <a href="http://localhost:3000/signup" class="plan-btn plan-btn-primary">Start 14-day free trial</a>
+  </div>
+
+  <!-- Agency -->
+  <div class="plan-card">
+    <div class="plan-name">Agency</div>
+    <div class="plan-price"><sup>$</sup><span class="price-val" data-monthly="199" data-annual="159">199</span><span class="per">/mo</span></div>
+    <div class="plan-desc">Unlimited estimators and white-glove support for agencies and large teams.</div>
+    <div class="plan-divider"></div>
+    <ul class="plan-features">
+      <li>Unlimited estimators</li>
+      <li>Unlimited submissions</li>
+      <li>Email + SMS notifications</li>
+      <li>Full branding + custom fonts</li>
+      <li>CSV + JSON export</li>
+      <li>Service-area gating</li>
+      <li>Advanced analytics</li>
+      <li>Priority support + onboarding</li>
+    </ul>
+    <a href="/contact.html" class="plan-btn plan-btn-outline">Contact sales</a>
+  </div>
+
+</div>
+
+<!-- Money-back guarantee -->
+<div class="guarantee-bar">
+  <h3>🔒 30-Day Money-Back Guarantee</h3>
+  <p>Not happy in your first 30 days? We'll refund you in full — no questions asked.</p>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section" style="margin-top: 80px;">
+  <h2 class="faq-title">Frequently Asked Questions</h2>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Can I change plans at any time? <span class="faq-icon">+</span></div>
+    <div class="faq-a">Yes. You can upgrade or downgrade at any time. When you upgrade, you're billed the prorated difference immediately. When you downgrade, the change takes effect at the next billing cycle.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">What counts as a "submission"? <span class="faq-icon">+</span></div>
+    <div class="faq-a">A submission is when a website visitor completes your estimator and submits their contact info. Partial completions (drop-offs) are tracked for analytics but don't count toward your limit.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Do you store my customers' data? <span class="faq-icon">+</span></div>
+    <div class="faq-a">Yes — leads and their answers are stored securely on our servers and are accessible only to your account. You can export or permanently delete all data at any time to comply with GDPR or CCPA requests.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Is there a long-term contract? <span class="faq-icon">+</span></div>
+    <div class="faq-a">No. All plans are month-to-month by default. Annual plans are prepaid for 12 months at a 20% discount and are non-refundable after the 30-day guarantee period.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Can I embed on multiple websites? <span class="faq-icon">+</span></div>
+    <div class="faq-a">Yes. The same estimator widget can be embedded on as many pages or domains as you like at no additional cost. Each estimator has a unique embed code.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">What payment methods do you accept? <span class="faq-icon">+</span></div>
+    <div class="faq-a">We accept all major credit and debit cards (Visa, Mastercard, Amex, Discover) via Stripe. All transactions are processed securely — we never store your card details.</div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="/" class="nav-logo"><div class="nav-logo-mark">EP</div>EstimatorPro</a>
+      <p>Turn your website into a lead-capture machine with embeddable price estimators built for service businesses.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Product</div>
+      <ul class="footer-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/pricing.html">Pricing</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+        <li><a href="http://localhost:3000/login">Login</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <ul class="footer-links">
+        <li><a href="/terms-of-service.html">Terms of Service</a></li>
+        <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 EstimatorPro. All rights reserved.</span>
+  </div>
+</footer>
+
+<script>
+  function toggleBilling() {
+    const annual = document.getElementById('billing-toggle').checked;
+    document.getElementById('lbl-monthly').classList.toggle('active', !annual);
+    document.getElementById('lbl-annual').classList.toggle('active', annual);
+    document.querySelectorAll('.price-val').forEach(el => {
+      el.textContent = annual ? el.dataset.annual : el.dataset.monthly;
+    });
+  }
+
+  function toggleFaq(el) {
+    const item = el.closest('.faq-item');
+    item.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

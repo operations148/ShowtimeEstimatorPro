@@ -1,0 +1,42 @@
+{
+  "name": "api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "test:unit": "vitest run --dir src/services",
+    "test:integration": "vitest run --dir src/routes",
+    "test:coverage": "vitest run --coverage",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/models/migrate.ts",
+    "db:seed": "tsx ../../scripts/seed.ts",
+    "db:reset": "tsx ../../scripts/reset-db.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.12.0",
+    "@repo/pricing-engine": "workspace:*",
+    "@repo/provider-adapters": "workspace:*",
+    "@repo/shared": "workspace:*",
+    "better-sqlite3": "^12.8.0",
+    "drizzle-orm": "^0.33.0",
+    "hono": "^4.5.0",
+    "jose": "^5.6.0",
+    "pg": "^8.12.0",
+    "pino": "^9.3.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/pg": "^8.11.0",
+    "drizzle-kit": "^0.24.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "@vitest/coverage-v8": "^2.0.0"
+  }
+}

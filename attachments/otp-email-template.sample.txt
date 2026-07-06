@@ -1,0 +1,4 @@
+Subject: Your sign-in code
+
+Your one-time code is: {{CODE}}
+This code expires in {{MINUTES}} minutes.

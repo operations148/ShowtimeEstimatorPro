@@ -1,0 +1,2 @@
+Your sign-in code is {{CODE}}.
+Expires in {{MINUTES}} minutes.

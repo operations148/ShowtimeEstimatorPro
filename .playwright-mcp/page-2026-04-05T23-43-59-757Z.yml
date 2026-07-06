@@ -1,0 +1,22 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Estimator" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Sign in to your account
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]: Email or phone number
+        - textbox "you@company.com" [active] [ref=e10]
+      - generic [ref=e11]:
+        - generic [ref=e12] [cursor=pointer]:
+          - radio "Email" [checked] [ref=e13]
+          - text: Email
+        - generic [ref=e14] [cursor=pointer]:
+          - radio "SMS" [ref=e15]
+          - text: SMS
+      - button "Send Code" [ref=e16] [cursor=pointer]
+      - paragraph [ref=e17]:
+        - text: No account?
+        - link "Create one" [ref=e18] [cursor=pointer]:
+          - /url: /signup
+  - alert [ref=e19]

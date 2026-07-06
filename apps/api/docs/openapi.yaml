@@ -1,0 +1,574 @@
+openapi: 3.1.0
+info:
+  title: Estimator Platform API
+  version: 1.0.0
+  description: Multi-tenant estimator + dashboard SaaS platform API.
+
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Tenants
+  - name: Users
+  - name: Estimators
+  - name: Widget
+  - name: Submissions
+  - name: Analytics
+  - name: Billing
+  - name: Exports
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        "200":
+          description: API and DB are healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: DB is unreachable
+
+  /auth/otp/request:
+    post:
+      tags: [Auth]
+      summary: Request an OTP code via email or SMS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpRequest"
+      responses:
+        "200":
+          description: OTP sent
+        "429":
+          description: Rate limited
+
+  /auth/otp/verify:
+    post:
+      tags: [Auth]
+      summary: Verify an OTP code and establish a session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerify"
+      responses:
+        "200":
+          description: Session created (sets httpOnly cookie)
+        "401":
+          description: Invalid OTP
+        "423":
+          description: Account locked
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Clear session cookie
+      responses:
+        "200":
+          description: Logged out
+
+  /tenants/signup:
+    post:
+      tags: [Tenants]
+      summary: Create a new tenant and owner user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug, ownerEmail]
+              properties:
+                name:
+                  type: string
+                slug:
+                  type: string
+                  pattern: "^[a-z0-9-]+$"
+                ownerEmail:
+                  type: string
+                  format: email
+      responses:
+        "201":
+          description: Tenant and owner created
+        "409":
+          description: Slug already taken
+
+  /tenants/me:
+    get:
+      tags: [Tenants]
+      summary: Get current tenant details
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Tenant details
+
+  /users:
+    get:
+      tags: [Users]
+      summary: List users in current tenant
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: User list
+    post:
+      tags: [Users]
+      summary: Create/invite a user (admin+)
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUser"
+      responses:
+        "201":
+          description: User created
+
+  /users/{id}:
+    delete:
+      tags: [Users]
+      summary: Delete a user (owner only)
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: User deleted
+
+  /estimators:
+    get:
+      tags: [Estimators]
+      summary: List estimators
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Estimator list
+    post:
+      tags: [Estimators]
+      summary: Create an estimator
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEstimator"
+      responses:
+        "201":
+          description: Estimator created
+
+  /estimators/{id}:
+    get:
+      tags: [Estimators]
+      summary: Get estimator by ID
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Estimator details
+    patch:
+      tags: [Estimators]
+      summary: Update an estimator
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEstimator"
+      responses:
+        "200":
+          description: Estimator updated
+    delete:
+      tags: [Estimators]
+      summary: Delete an estimator
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Estimator deleted
+
+  /estimators/{id}/publish:
+    post:
+      tags: [Estimators]
+      summary: Publish an estimator (makes it available via widget)
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Published
+
+  /estimators/{id}/unpublish:
+    post:
+      tags: [Estimators]
+      summary: Unpublish an estimator
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Unpublished
+
+  /estimators/{id}/questions:
+    put:
+      tags: [Estimators]
+      summary: Replace questions for current version
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                questions:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Question"
+      responses:
+        "200":
+          description: Questions updated
+
+  /widget/{publicKey}:
+    get:
+      tags: [Widget]
+      summary: Get published estimator config (public)
+      parameters:
+        - name: publicKey
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Widget configuration
+        "404":
+          description: Not found or not published
+
+  /submissions:
+    post:
+      tags: [Submissions]
+      summary: Submit an estimate (public, called by widget)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubmission"
+      responses:
+        "201":
+          description: Submission created with estimate
+        "422":
+          description: Out of service area
+    get:
+      tags: [Submissions]
+      summary: List submissions (authenticated)
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Submission list
+
+  /submissions/{id}:
+    delete:
+      tags: [Submissions]
+      summary: Delete a submission
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deleted
+
+  /analytics/events:
+    post:
+      tags: [Analytics]
+      summary: Track an analytics event (public, called by widget)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyticsEvent"
+      responses:
+        "200":
+          description: Event tracked
+
+  /analytics/summary:
+    get:
+      tags: [Analytics]
+      summary: Get analytics summary (authenticated)
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: estimatorId
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Analytics summary
+
+  /billing/subscription:
+    get:
+      tags: [Billing]
+      summary: Get current subscription status
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Subscription info
+
+  /billing/checkout:
+    post:
+      tags: [Billing]
+      summary: Create a checkout session
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Checkout URL
+
+  /billing/webhook:
+    post:
+      tags: [Billing]
+      summary: Handle payment provider webhooks
+      responses:
+        "200":
+          description: Webhook processed
+
+  /billing/portal:
+    post:
+      tags: [Billing]
+      summary: Create a billing portal session
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Portal URL
+
+  /exports/submissions:
+    get:
+      tags: [Exports]
+      summary: Export submissions as CSV
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: CSV file download
+          content:
+            text/csv:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: ep_session
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [ok, degraded]
+            db:
+              type: string
+
+    OtpRequest:
+      type: object
+      required: [identifier, channel]
+      properties:
+        identifier:
+          type: string
+          description: Email address or phone number
+        channel:
+          type: string
+          enum: [email, sms]
+
+    OtpVerify:
+      type: object
+      required: [identifier, code]
+      properties:
+        identifier:
+          type: string
+        code:
+          type: string
+          pattern: "^\\d{6}$"
+
+    CreateUser:
+      type: object
+      required: [email, role]
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, member]
+
+    CreateEstimator:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        branding:
+          type: object
+          properties:
+            logoUrl:
+              type: string
+              format: uri
+            primaryColor:
+              type: string
+              pattern: "^#[0-9a-fA-F]{6}$"
+            fontFamily:
+              type: string
+
+    Question:
+      type: object
+      required: [id, stepId, type, label, order]
+      properties:
+        id:
+          type: string
+        stepId:
+          type: string
+        type:
+          type: string
+          enum: [single, multiple, text, number]
+        label:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        required:
+          type: boolean
+        order:
+          type: integer
+
+    CreateSubmission:
+      type: object
+      required: [estimatorPublicKey, lead, answers]
+      properties:
+        estimatorPublicKey:
+          type: string
+        lead:
+          type: object
+          required: [email, zip]
+          properties:
+            email:
+              type: string
+              format: email
+            zip:
+              type: string
+            name:
+              type: string
+            phone:
+              type: string
+        answers:
+          type: object
+
+    AnalyticsEvent:
+      type: object
+      required: [estimatorId, eventType, sessionId]
+      properties:
+        estimatorId:
+          type: string
+        eventType:
+          type: string
+          enum: [step_view, step_complete, submit, gated_out]
+        stepId:
+          type: string
+        sessionId:
+          type: string

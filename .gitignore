@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
+coverage/
+
+# SQLite local dev databases
+*.db
+*.db-wal
+*.db-shm
+
+# Uploaded media (per-tenant logos/images) — user content, not source
+apps/api/public/uploads/

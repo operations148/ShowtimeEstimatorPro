@@ -1,0 +1,283 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "M MyEstimator" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e4]: M
+      - text: MyEstimator
+    - list [ref=e5]:
+      - listitem [ref=e6]:
+        - link "Home" [ref=e7] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e8]:
+        - link "Pricing" [ref=e9] [cursor=pointer]:
+          - /url: "#"
+      - listitem [ref=e10]:
+        - link "Contact" [ref=e11] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=e12]:
+      - link "Log in" [ref=e13] [cursor=pointer]:
+        - /url: http://localhost:3000/login
+      - link "Get Started Free" [ref=e14] [cursor=pointer]:
+        - /url: http://localhost:3000/signup
+  - generic [ref=e15]:
+    - generic [ref=e16]: Built for Pool Builders
+    - heading "Your Website Should Be Selling for You" [level=1] [ref=e18]:
+      - text: Your Website Should Be
+      - emphasis [ref=e19]: Selling for You
+    - paragraph [ref=e20]: Embed an interactive estimator that qualifies leads and captures contact info — so only serious buyers reach out.
+    - generic [ref=e21]:
+      - link "Start Free Trial" [ref=e22] [cursor=pointer]:
+        - /url: http://localhost:3000/signup
+      - link "See how it works ↓" [ref=e23] [cursor=pointer]:
+        - /url: "#how-it-works"
+    - generic [ref=e24]: Try the estimator below
+    - generic [ref=e28]:
+      - paragraph [ref=e30]: Pool Steve
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - paragraph [ref=e33]: Would you like a pool only or a pool & spa?*
+          - generic [ref=e34]:
+            - button "Pool Only Pool Only" [ref=e35] [cursor=pointer]:
+              - img "Pool Only" [ref=e36]
+              - generic [ref=e37]: Pool Only
+            - button "Pool & Spa Pool & Spa" [ref=e38] [cursor=pointer]:
+              - img "Pool & Spa" [ref=e39]
+              - generic [ref=e40]: Pool & Spa
+        - generic [ref=e41]:
+          - paragraph [ref=e42]: What size pool are you looking for?*
+          - generic [ref=e43]:
+            - button "Regular 15x30 Regular 15x30" [ref=e44] [cursor=pointer]:
+              - img "Regular 15x30" [ref=e45]
+              - generic [ref=e46]: Regular 15x30
+            - button "Medium 17x35 Medium 17x35" [ref=e47] [cursor=pointer]:
+              - img "Medium 17x35" [ref=e48]
+              - generic [ref=e49]: Medium 17x35
+            - button "Large 20x40 Large 20x40" [ref=e50] [cursor=pointer]:
+              - img "Large 20x40" [ref=e51]
+              - generic [ref=e52]: Large 20x40
+        - generic [ref=e53]:
+          - paragraph [ref=e54]: What shape would you like your pool?*
+          - generic [ref=e55]:
+            - button "Freeform / Curvy Freeform / Curvy" [ref=e56] [cursor=pointer]:
+              - img "Freeform / Curvy" [ref=e57]
+              - generic [ref=e58]: Freeform / Curvy
+            - button "Straight / Modern Straight / Modern" [ref=e59] [cursor=pointer]:
+              - img "Straight / Modern" [ref=e60]
+              - generic [ref=e61]: Straight / Modern
+        - generic [ref=e62]:
+          - paragraph [ref=e63]: What water features would you like?*
+          - generic [ref=e64]:
+            - button "Sheet Fall Sheet Fall" [ref=e65] [cursor=pointer]:
+              - img "Sheet Fall" [ref=e66]
+              - generic [ref=e67]: Sheet Fall
+            - button "Natural Rock Natural Rock" [ref=e68] [cursor=pointer]:
+              - img "Natural Rock" [ref=e69]
+              - generic [ref=e70]: Natural Rock
+            - button "Bubblers Bubblers" [ref=e71] [cursor=pointer]:
+              - img "Bubblers" [ref=e72]
+              - generic [ref=e73]: Bubblers
+            - button "Deck Jets Deck Jets" [ref=e74] [cursor=pointer]:
+              - img "Deck Jets" [ref=e75]
+              - generic [ref=e76]: Deck Jets
+            - button "Water Bowls Water Bowls" [ref=e77] [cursor=pointer]:
+              - img "Water Bowls" [ref=e78]
+              - generic [ref=e79]: Water Bowls
+            - button "Fire Water Bowls Fire Water Bowls" [ref=e80] [cursor=pointer]:
+              - img "Fire Water Bowls" [ref=e81]
+              - generic [ref=e82]: Fire Water Bowls
+        - generic [ref=e83]:
+          - paragraph [ref=e84]: Pool Upgrades*
+          - generic [ref=e85]:
+            - button "Salt Water Salt Water" [ref=e86] [cursor=pointer]:
+              - img "Salt Water" [ref=e87]
+              - generic [ref=e88]: Salt Water
+            - button "LED Color Lighting LED Color Lighting" [ref=e89] [cursor=pointer]:
+              - img "LED Color Lighting" [ref=e90]
+              - generic [ref=e91]: LED Color Lighting
+            - button "Pool Automation Pool Automation" [ref=e92] [cursor=pointer]:
+              - img "Pool Automation" [ref=e93]
+              - generic [ref=e94]: Pool Automation
+            - button "Umbrella Sleeve Umbrella Sleeve" [ref=e95] [cursor=pointer]:
+              - img "Umbrella Sleeve" [ref=e96]
+              - generic [ref=e97]: Umbrella Sleeve
+            - button "Glass Trim Tile Glass Trim Tile" [ref=e98] [cursor=pointer]:
+              - img "Glass Trim Tile" [ref=e99]
+              - generic [ref=e100]: Glass Trim Tile
+            - button "Hand Rail Hand Rail" [ref=e101] [cursor=pointer]:
+              - img "Hand Rail" [ref=e102]
+              - generic [ref=e103]: Hand Rail
+        - generic [ref=e104]:
+          - paragraph [ref=e105]: What interior finish would you like?*
+          - generic [ref=e106]:
+            - button "Premium White Plaster Premium White Plaster" [ref=e107] [cursor=pointer]:
+              - img "Premium White Plaster" [ref=e108]
+              - generic [ref=e109]: Premium White Plaster
+            - button "Shimmer Quartz Shimmer Quartz" [ref=e110] [cursor=pointer]:
+              - img "Shimmer Quartz" [ref=e111]
+              - generic [ref=e112]: Shimmer Quartz
+            - button "PebbleTec PebbleTec" [ref=e113] [cursor=pointer]:
+              - img "PebbleTec" [ref=e114]
+              - generic [ref=e115]: PebbleTec
+        - generic [ref=e116]:
+          - paragraph [ref=e117]: Would you like a concrete patio or coping only?*
+          - generic [ref=e118]:
+            - button "Coping Only Coping Only" [ref=e119] [cursor=pointer]:
+              - img "Coping Only" [ref=e120]
+              - generic [ref=e121]: Coping Only
+            - button "Concrete Patio" [ref=e122] [cursor=pointer]:
+              - generic [ref=e124]: Concrete Patio
+            - button "Large Patio + Deck" [ref=e125] [cursor=pointer]:
+              - generic [ref=e127]: Large Patio + Deck
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - generic [ref=e131]: Email *
+            - textbox "you@email.com" [ref=e132]
+          - generic [ref=e133]:
+            - generic [ref=e134]: Zip Code *
+            - textbox "90210" [ref=e135]
+          - generic [ref=e136]:
+            - generic [ref=e137]: Name
+            - textbox "Jane Smith" [ref=e138]
+          - generic [ref=e139]:
+            - generic [ref=e140]: Phone
+            - textbox "(555) 555-5555" [ref=e141]
+      - button "🔒 Reveal Your Price" [disabled] [ref=e143]
+  - generic [ref=e145]:
+    - paragraph [ref=e146]: Trusted by pool builders across the country
+    - generic [ref=e147]:
+      - generic [ref=e148]:
+        - generic [ref=e149]: Aquos Pools
+        - generic [ref=e150]: Manteca, CA
+        - generic [ref=e151]: 340%
+        - generic [ref=e152]: increase in qualified leads
+      - generic [ref=e153]:
+        - generic [ref=e154]: Laguna Pool & Spa
+        - generic [ref=e155]: Las Vegas, NV
+        - generic [ref=e156]: $2.4M
+        - generic [ref=e157]: revenue from widget leads
+      - generic [ref=e158]:
+        - generic [ref=e159]: BlueLine Pools
+        - generic [ref=e160]: Phoenix, AZ
+        - generic [ref=e161]: 78%
+        - generic [ref=e162]: lead-to-consultation rate
+  - generic [ref=e165]:
+    - generic [ref=e166]:
+      - paragraph [ref=e167]: Real-Time Dashboard
+      - heading "Every lead, every estimate — in one place" [level=2] [ref=e168]
+      - paragraph [ref=e169]: See who submitted, what they want, and what they were quoted. Export to CSV, filter by date, track drop-off by step.
+      - link "View your dashboard →" [ref=e170] [cursor=pointer]:
+        - /url: http://localhost:3000/signup
+    - img "Analytics Dashboard" [ref=e172]
+  - generic [ref=e174]:
+    - paragraph [ref=e175]: Why MyEstimator
+    - heading "Stop losing leads to your competitors" [level=2] [ref=e176]
+    - paragraph [ref=e177]: Most pool shoppers visit 3–5 websites before calling anyone. Be the one that gives them a number instantly.
+    - generic [ref=e178]:
+      - generic [ref=e179]:
+        - generic [ref=e180]: 🎯
+        - heading "Qualify Every Lead Before They Call" [level=3] [ref=e181]
+        - paragraph [ref=e182]: Your estimator walks visitors through a guided flow and captures their budget range, zip code, and contact info before they reach you.
+      - generic [ref=e183]:
+        - generic [ref=e184]: ⏰
+        - heading "Lead Capture Operating 24/7" [level=3] [ref=e185]
+        - paragraph [ref=e186]: Your website works while you sleep. Leads captured at 2am are in your dashboard by 9am — no missed opportunities ever.
+      - generic [ref=e187]:
+        - generic [ref=e188]: 📊
+        - heading "Real-Time Analytics Access" [level=3] [ref=e189]
+        - paragraph [ref=e190]: See which questions cause drop-off, which zip codes dominate your leads, and exactly what your average lead is worth.
+  - generic [ref=e192]:
+    - paragraph [ref=e193]: Setup in minutes
+    - heading "Three steps to your first lead" [level=2] [ref=e194]
+    - generic [ref=e195]:
+      - generic [ref=e196]:
+        - generic [ref=e197]: "1"
+        - heading "Build Your Estimator" [level=3] [ref=e198]
+        - paragraph [ref=e199]: Use our guided builder to add your questions, set pricing ranges, and configure your service area. No code needed.
+      - generic [ref=e200]:
+        - generic [ref=e201]: "2"
+        - heading "Embed on Your Website" [level=3] [ref=e202]
+        - paragraph [ref=e203]: Copy two lines of code and paste into any page — WordPress, Squarespace, Wix, or plain HTML.
+      - generic [ref=e204]:
+        - generic [ref=e205]: "3"
+        - heading "Start Getting Leads" [level=3] [ref=e206]
+        - paragraph [ref=e207]: Visitors get instant estimates. You get qualified leads with contact info, answers, and budget range — automatically.
+  - generic [ref=e209]:
+    - heading "1 pool job pays for MyEstimator for 20+ months" [level=2] [ref=e210]
+    - generic [ref=e211]:
+      - generic [ref=e212]:
+        - generic [ref=e213]: 78%
+        - generic [ref=e214]: lead-to-consultation conversion rate
+      - generic [ref=e215]:
+        - generic [ref=e216]: 24/7
+        - generic [ref=e217]: automated lead capture while you're off the clock
+      - generic [ref=e218]:
+        - generic [ref=e219]: 5 min
+        - generic [ref=e220]: response time = 9× more likely to close
+      - generic [ref=e221]:
+        - generic [ref=e222]: 2 lines
+        - generic [ref=e223]: of code to embed on any website
+  - generic [ref=e225]:
+    - paragraph [ref=e226]: Expanding to more trades
+    - heading "Built for pool builders, coming soon to more" [level=2] [ref=e227]
+    - generic [ref=e228]:
+      - generic [ref=e229]:
+        - generic [ref=e230]: 🏊
+        - generic [ref=e231]: Pool Builders
+      - generic [ref=e232]:
+        - generic [ref=e233]: 🏗️
+        - generic [ref=e234]: General Contractors
+      - generic [ref=e235]:
+        - generic [ref=e236]: ❄️
+        - generic [ref=e237]: HVAC Companies
+      - generic [ref=e238]:
+        - generic [ref=e239]: 🔨
+        - generic [ref=e240]: Remodelers
+  - generic [ref=e242]:
+    - heading "Ready to Turn Your Website Into a Lead Machine?" [level=2] [ref=e243]
+    - paragraph [ref=e244]: Join hundreds of pool builders capturing qualified leads every day.
+    - generic [ref=e245]:
+      - link "Get Started Free" [ref=e246] [cursor=pointer]:
+        - /url: http://localhost:3000/signup
+      - link "View Pricing" [ref=e247] [cursor=pointer]:
+        - /url: "#"
+  - contentinfo [ref=e248]:
+    - generic [ref=e249]:
+      - generic [ref=e250]:
+        - link "M MyEstimator" [ref=e251] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e252]: M
+          - text: MyEstimator
+        - paragraph [ref=e253]: The embeddable price estimator platform for home service businesses. Capture leads, qualify buyers, close more jobs.
+      - generic [ref=e254]:
+        - generic [ref=e255]: Pages
+        - list [ref=e256]:
+          - listitem [ref=e257]:
+            - link "Home" [ref=e258] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e259]:
+            - link "Pricing" [ref=e260] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e261]:
+            - link "Contact" [ref=e262] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e263]:
+            - link "Login" [ref=e264] [cursor=pointer]:
+              - /url: http://localhost:3000/login
+      - generic [ref=e265]:
+        - generic [ref=e266]: Company
+        - list [ref=e267]:
+          - listitem [ref=e268]:
+            - link "Terms of Service" [ref=e269] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e270]:
+            - link "Privacy Policy" [ref=e271] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e272]:
+            - link "Twitter / X" [ref=e273] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e274]:
+            - link "LinkedIn" [ref=e275] [cursor=pointer]:
+              - /url: "#"
+    - generic [ref=e276]:
+      - generic [ref=e277]: © 2026 MyEstimator. All rights reserved.
+      - generic [ref=e278]: Built for pool builders who want more leads.

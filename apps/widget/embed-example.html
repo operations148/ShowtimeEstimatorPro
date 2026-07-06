@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Widget Embed Example</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+    h1 { font-size: 24px; }
+    p { color: #6b7280; }
+  </style>
+</head>
+<body>
+  <p>Get an instant estimate for your dream pool below:</p>
+
+  <!-- Estimator Widget -->
+  <div
+    id="estimator-widget"
+    data-key="26920aadc92ed1e98a274fdae4258cc7"
+    data-api-url="http://localhost:4000/api/v1"
+  ></div>
+  <script>
+    // Allow the dashboard "View Estimator" button to pass a specific key via ?key=
+    const urlKey = new URLSearchParams(window.location.search).get('key');
+    if (urlKey) {
+      document.getElementById('estimator-widget').setAttribute('data-key', urlKey);
+    }
+  </script>
+  <script src="/src/main.tsx" type="module"></script>
+  <!-- In production, use: <script src="https://cdn.example.com/widget.iife.js"></script> -->
+</body>
+</html>

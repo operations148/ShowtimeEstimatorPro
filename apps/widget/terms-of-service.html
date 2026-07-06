@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — EstimatorPro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080f1a;
+      --bg2: #0d1828;
+      --bg3: #111f35;
+      --cyan: #06b6d4;
+      --cyan-dark: #0891b2;
+      --text: #f0f6ff;
+      --text-muted: #8ba3be;
+      --text-dim: #4a6580;
+      --border: rgba(255,255,255,0.07);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(8,15,26,0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .nav-logo-mark {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--cyan), #2563eb);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 900; color: #fff;
+    }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn-ghost {
+      font-size: 14px; font-weight: 500; color: var(--text-muted);
+      text-decoration: none; padding: 8px 16px; border-radius: 8px;
+      transition: color 0.15s;
+    }
+    .btn-ghost:hover { color: var(--text); }
+
+    .btn-primary {
+      font-size: 14px; font-weight: 600;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan-dark));
+      color: #fff; text-decoration: none;
+      padding: 9px 20px; border-radius: 8px;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+
+    .legal-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 120px 24px 80px;
+    }
+
+    .legal-eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 12px;
+    }
+
+    .legal-title {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .legal-meta {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .legal-body h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 40px 0 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .legal-body h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 24px 0 8px;
+    }
+
+    .legal-body p {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .legal-body ul, .legal-body ol {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+
+    .legal-body li {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .legal-body a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    .legal-body a:hover { text-decoration: underline; }
+
+    .legal-highlight {
+      background: rgba(6,182,212,0.07);
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 24px 0;
+    }
+
+    .legal-highlight p { margin: 0; font-size: 14px; color: var(--text-muted); }
+
+    .legal-warning {
+      background: rgba(234,179,8,0.06);
+      border: 1px solid rgba(234,179,8,0.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 24px 0;
+    }
+
+    .legal-warning p { margin: 0; font-size: 14px; color: var(--text-muted); }
+
+    .toc {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+
+    .toc p {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .toc ol { padding-left: 20px; }
+
+    .toc li {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .toc a { color: var(--cyan); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 48px 40px 32px;
+      margin-top: 80px;
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .footer-links-inline {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links-inline a {
+      font-size: 13px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links-inline a:hover { color: var(--cyan); }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 20px; }
+      .legal-title { font-size: 28px; }
+      .legal-wrap { padding: 100px 20px 60px; }
+      footer { padding: 40px 20px 24px; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark">EP</div>
+    EstimatorPro
+  </a>
+  <div class="nav-actions">
+    <a href="http://localhost:3000/login" class="btn-ghost">Log in</a>
+    <a href="http://localhost:3000/signup" class="btn-primary">Get Started Free</a>
+  </div>
+</nav>
+
+<!-- ── Content ── -->
+<div class="legal-wrap">
+  <p class="legal-eyebrow">Legal</p>
+  <h1 class="legal-title">Terms of Service</h1>
+  <p class="legal-meta">Effective Date: April 6, 2026 &nbsp;·&nbsp; Last Updated: April 6, 2026</p>
+
+  <div class="legal-highlight">
+    <p><strong style="color:#f0f6ff">Please read carefully.</strong> These Terms of Service ("Terms") constitute a legally binding agreement between you and EstimatorPro. By creating an account or using the Service, you agree to these Terms. If you do not agree, do not use the Service.</p>
+  </div>
+
+  <div class="toc">
+    <p>Table of Contents</p>
+    <ol>
+      <li><a href="#section-1">Acceptance of Terms</a></li>
+      <li><a href="#section-2">Description of Service</a></li>
+      <li><a href="#section-3">Eligibility</a></li>
+      <li><a href="#section-4">Account Registration</a></li>
+      <li><a href="#section-5">Subscriptions and Billing</a></li>
+      <li><a href="#section-6">Acceptable Use</a></li>
+      <li><a href="#section-7">Intellectual Property</a></li>
+      <li><a href="#section-8">Customer Data and Privacy</a></li>
+      <li><a href="#section-9">Third-Party Services</a></li>
+      <li><a href="#section-10">Disclaimer of Warranties</a></li>
+      <li><a href="#section-11">Limitation of Liability</a></li>
+      <li><a href="#section-12">Indemnification</a></li>
+      <li><a href="#section-13">Dispute Resolution and Arbitration</a></li>
+      <li><a href="#section-14">Class Action Waiver</a></li>
+      <li><a href="#section-15">Governing Law</a></li>
+      <li><a href="#section-16">Term and Termination</a></li>
+      <li><a href="#section-17">Changes to Terms</a></li>
+      <li><a href="#section-18">General Provisions</a></li>
+      <li><a href="#section-19">Contact Information</a></li>
+    </ol>
+  </div>
+
+  <div class="legal-body">
+
+    <h2 id="section-1">1. Acceptance of Terms</h2>
+    <p>By accessing or using the EstimatorPro platform, website, APIs, or any related services (collectively, the "Service"), you ("User," "Tenant," or "you") agree to be bound by these Terms of Service and our <a href="/privacy-policy.html">Privacy Policy</a>, which is incorporated herein by reference. If you are accepting on behalf of a company or other legal entity, you represent that you have the authority to bind that entity to these Terms.</p>
+
+    <h2 id="section-2">2. Description of Service</h2>
+    <p>EstimatorPro is a software-as-a-service (SaaS) platform that enables home service businesses to:</p>
+    <ul>
+      <li>Build and configure embeddable price-estimation widgets</li>
+      <li>Capture and manage customer leads submitted via those widgets</li>
+      <li>View analytics on widget performance, submissions, and estimated revenue</li>
+      <li>Export lead data for use in their own business operations</li>
+    </ul>
+    <p>EstimatorPro acts as a <strong>data processor</strong> on behalf of Tenants, who are the <strong>data controllers</strong> for their end users' personal data. Estimates generated by the Service are approximate and for informational purposes only. They do not constitute binding quotes or offers.</p>
+
+    <h2 id="section-3">3. Eligibility</h2>
+    <p>You must be at least 18 years old and able to form legally binding contracts under applicable law to use the Service. The Service is intended for business use by companies operating in the United States. By using the Service, you represent and warrant that you meet these requirements.</p>
+
+    <h2 id="section-4">4. Account Registration</h2>
+    <p>You must create an account to access the dashboard features of the Service. You agree to:</p>
+    <ul>
+      <li>Provide accurate, current, and complete information during registration</li>
+      <li>Maintain and update your account information as needed</li>
+      <li>Keep your authentication credentials secure and confidential</li>
+      <li>Notify us immediately at <a href="mailto:support@myestimator.com">support@myestimator.com</a> of any unauthorized use of your account</li>
+      <li>Accept responsibility for all activity that occurs under your account</li>
+    </ul>
+    <p>We use one-time password (OTP) authentication. You are responsible for maintaining access to the email address or phone number associated with your account.</p>
+
+    <h2 id="section-5">5. Subscriptions and Billing</h2>
+
+    <h3>5.1 Subscription Plans</h3>
+    <p>Access to certain features of the Service requires a paid subscription. Subscription plans, pricing, and included features are described on our Pricing page and may change from time to time with appropriate notice.</p>
+
+    <h3>5.2 Payment</h3>
+    <p>By subscribing, you authorize EstimatorPro (via our payment processor, Stripe) to charge your payment method on a recurring basis (monthly or annually, as selected). All amounts are in U.S. dollars. You are responsible for all applicable taxes.</p>
+
+    <h3>5.3 Free Trial</h3>
+    <p>We may offer a free trial period. Unless you cancel before the trial ends, your payment method will be automatically charged the applicable subscription fee.</p>
+
+    <h3>5.4 Cancellation</h3>
+    <p>You may cancel your subscription at any time from your account settings or by contacting support. Cancellation takes effect at the end of the current billing period. We do not provide refunds for partial billing periods unless required by applicable law.</p>
+
+    <h3>5.5 Refunds</h3>
+    <p>All fees are non-refundable except as required by law or as expressly stated in writing by EstimatorPro. If you believe you were charged in error, contact <a href="mailto:billing@myestimator.com">billing@myestimator.com</a> within 30 days of the charge.</p>
+
+    <h3>5.6 Suspension for Non-Payment</h3>
+    <p>If your payment fails, we will notify you and may suspend access to paid features until payment is resolved. Accounts with overdue balances for more than 30 days may be terminated.</p>
+
+    <h2 id="section-6">6. Acceptable Use</h2>
+    <p>You agree not to use the Service to:</p>
+    <ul>
+      <li>Violate any federal, state, or local law or regulation</li>
+      <li>Collect personal data without proper notice and consent from end users</li>
+      <li>Send unsolicited commercial email (spam) to leads captured via the widget</li>
+      <li>Engage in deceptive, fraudulent, or misleading practices toward end users</li>
+      <li>Attempt to gain unauthorized access to our systems or other users' accounts</li>
+      <li>Reverse engineer, decompile, or disassemble any part of the Service</li>
+      <li>Resell, sublicense, or white-label the Service without written authorization</li>
+      <li>Upload or transmit malicious code, viruses, or harmful content</li>
+      <li>Interfere with or disrupt the integrity or performance of the Service</li>
+      <li>Circumvent rate limits, security measures, or usage restrictions</li>
+      <li>Use the Service for industries or activities prohibited by our Acceptable Use Policy</li>
+    </ul>
+    <p>We reserve the right to investigate and take appropriate action for violations, including suspension or termination of your account.</p>
+
+    <h2 id="section-7">7. Intellectual Property</h2>
+
+    <h3>7.1 Our IP</h3>
+    <p>The Service, including its software, design, text, graphics, logos, and all other content, is owned by EstimatorPro and protected by U.S. copyright, trademark, and other intellectual property laws. You receive a limited, non-exclusive, non-transferable, revocable license to use the Service solely for your internal business purposes in accordance with these Terms.</p>
+
+    <h3>7.2 Your Content</h3>
+    <p>You retain ownership of all content you upload to the Service, including your estimator questions, branding assets, and business data ("Your Content"). By uploading Your Content, you grant EstimatorPro a limited license to process, store, and display it solely to provide the Service. We do not claim ownership of Your Content.</p>
+
+    <h3>7.3 Feedback</h3>
+    <p>If you submit feedback, suggestions, or ideas about the Service, you grant us an irrevocable, royalty-free license to use that feedback without restriction or compensation to you.</p>
+
+    <h2 id="section-8">8. Customer Data and Privacy</h2>
+    <p>As a Tenant, you are responsible for:</p>
+    <ul>
+      <li>Providing end users with adequate notice of data collection through your widget, including a link to your own privacy policy</li>
+      <li>Obtaining any required consents from end users under applicable law (including CCPA, if applicable)</li>
+      <li>Using end user data only in compliance with applicable law and your own privacy policy</li>
+      <li>Not using lead data for purposes beyond what end users would reasonably expect</li>
+    </ul>
+    <p>Our collection and use of personal data is described in our <a href="/privacy-policy.html">Privacy Policy</a>. We process end user data as your data processor under a Data Processing Agreement implied by your acceptance of these Terms.</p>
+
+    <h2 id="section-9">9. Third-Party Services</h2>
+    <p>The Service integrates with third-party services (e.g., Stripe for payments, email providers for OTP delivery). Your use of those services is subject to their own terms and privacy policies. We are not responsible for the practices or content of any third-party service.</p>
+
+    <h2 id="section-10">10. Disclaimer of Warranties</h2>
+    <div class="legal-warning">
+      <p><strong style="color:#f0f6ff">THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND ACCURACY. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS. PRICE ESTIMATES GENERATED BY THE SERVICE ARE APPROXIMATIONS ONLY AND DO NOT CONSTITUTE BINDING QUOTES.</strong></p>
+    </div>
+    <p>Some jurisdictions do not allow the exclusion of implied warranties. In such jurisdictions, the above exclusions apply to the fullest extent permitted by law.</p>
+
+    <h2 id="section-11">11. Limitation of Liability</h2>
+    <div class="legal-warning">
+      <p><strong style="color:#f0f6ff">TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, MYESTIMATOR AND ITS OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, AND LICENSORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, OR EXEMPLARY DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, REVENUE, DATA, BUSINESS, OR GOODWILL, ARISING OUT OF OR IN CONNECTION WITH THESE TERMS OR YOUR USE OF THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</strong></p>
+    </div>
+    <p>Our total aggregate liability to you for any claims arising from or related to these Terms or the Service shall not exceed the greater of: (a) the total fees paid by you to EstimatorPro in the 12 months preceding the claim, or (b) one hundred U.S. dollars ($100).</p>
+    <p>Some jurisdictions do not allow the exclusion or limitation of consequential or incidental damages, so the above limitation may not apply to you.</p>
+
+    <h2 id="section-12">12. Indemnification</h2>
+    <p>You agree to indemnify, defend, and hold harmless EstimatorPro and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, costs, and expenses (including reasonable attorneys' fees) arising from: (a) your use of the Service; (b) Your Content; (c) your violation of these Terms; (d) your violation of any third party's rights; or (e) your violation of applicable law.</p>
+
+    <h2 id="section-13">13. Dispute Resolution and Arbitration</h2>
+    <p>PLEASE READ THIS SECTION CAREFULLY. IT AFFECTS YOUR LEGAL RIGHTS.</p>
+    <p>You and EstimatorPro agree to resolve any disputes through binding individual arbitration, not in court, except as provided below. The arbitration will be conducted by JAMS under its applicable rules, and judgment on the arbitration award may be entered in any court with jurisdiction.</p>
+    <p><strong>Exceptions:</strong> Either party may bring an individual claim in small claims court. Either party may seek emergency injunctive relief in court to prevent irreparable harm pending arbitration.</p>
+    <p><strong>Opt-out:</strong> You may opt out of arbitration by sending written notice to <a href="mailto:legal@myestimator.com">legal@myestimator.com</a> within 30 days of first accepting these Terms. If you opt out, disputes will be resolved in the courts specified in Section 15.</p>
+
+    <h2 id="section-14">14. Class Action Waiver</h2>
+    <p>TO THE EXTENT PERMITTED BY LAW, YOU AND MYESTIMATOR WAIVE ANY RIGHT TO PARTICIPATE IN A CLASS ACTION LAWSUIT OR CLASS-WIDE ARBITRATION. All disputes must be brought on an individual basis. This waiver does not apply to claims brought under the Private Attorneys General Act (PAGA) in California, to the extent such claims cannot be waived under applicable law.</p>
+
+    <h2 id="section-15">15. Governing Law</h2>
+    <p>These Terms shall be governed by and construed in accordance with the laws of the State of Delaware, United States, without regard to its conflict of law principles. Subject to the arbitration clause above, any legal action or proceeding shall be brought exclusively in the state or federal courts located in Delaware. You consent to the personal jurisdiction of such courts.</p>
+
+    <h2 id="section-16">16. Term and Termination</h2>
+
+    <h3>16.1 Term</h3>
+    <p>These Terms remain in effect for as long as you use the Service or maintain an account.</p>
+
+    <h3>16.2 Termination by You</h3>
+    <p>You may terminate your account at any time by canceling your subscription and deleting your account in Settings, or by contacting <a href="mailto:support@myestimator.com">support@myestimator.com</a>.</p>
+
+    <h3>16.3 Termination by Us</h3>
+    <p>We may suspend or terminate your account immediately and without notice if: (a) you breach these Terms; (b) we are required to do so by law; (c) we determine that continuing to provide the Service would expose us or others to harm; or (d) you fail to pay fees owed.</p>
+
+    <h3>16.4 Effect of Termination</h3>
+    <p>Upon termination, your right to use the Service ceases immediately. Sections that by their nature should survive termination (including but not limited to Sections 7, 10, 11, 12, 13, 14, and 15) shall survive.</p>
+
+    <h2 id="section-17">17. Changes to Terms</h2>
+    <p>We reserve the right to modify these Terms at any time. We will provide notice of material changes by posting the updated Terms and updating the "Last Updated" date. For material changes, we will also send email notice at least 30 days before they take effect where required. Your continued use of the Service after the effective date constitutes acceptance of the updated Terms.</p>
+
+    <h2 id="section-18">18. General Provisions</h2>
+    <ul>
+      <li><strong>Entire Agreement:</strong> These Terms and our Privacy Policy constitute the entire agreement between you and EstimatorPro regarding the Service.</li>
+      <li><strong>Severability:</strong> If any provision is found unenforceable, the remaining provisions will remain in full force.</li>
+      <li><strong>Waiver:</strong> Our failure to enforce any right or provision is not a waiver of that right.</li>
+      <li><strong>Assignment:</strong> You may not assign these Terms without our prior written consent. We may assign our rights to a successor in connection with a merger or acquisition.</li>
+      <li><strong>Force Majeure:</strong> We are not liable for delays or failures in performance resulting from causes beyond our reasonable control.</li>
+      <li><strong>No Agency:</strong> Nothing in these Terms creates a partnership, joint venture, agency, or employment relationship between the parties.</li>
+      <li><strong>Notices:</strong> Legal notices to EstimatorPro must be sent by email to <a href="mailto:legal@myestimator.com">legal@myestimator.com</a> and confirmed by certified mail.</li>
+    </ul>
+
+    <h2 id="section-19">19. Contact Information</h2>
+    <p>For questions about these Terms of Service, please contact us:</p>
+    <ul>
+      <li><strong>Email:</strong> <a href="mailto:legal@myestimator.com">legal@myestimator.com</a></li>
+      <li><strong>Support:</strong> <a href="mailto:support@myestimator.com">support@myestimator.com</a></li>
+      <li><strong>Mailing Address:</strong> EstimatorPro, Legal Department, United States</li>
+    </ul>
+
+  </div>
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="footer-bottom">
+    <span>© 2026 EstimatorPro. All rights reserved.</span>
+    <div class="footer-links-inline">
+      <a href="/terms-of-service.html">Terms of Service</a>
+      <a href="/privacy-policy.html">Privacy Policy</a>
+      <a href="/">Home</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

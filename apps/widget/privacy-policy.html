@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — EstimatorPro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080f1a;
+      --bg2: #0d1828;
+      --bg3: #111f35;
+      --cyan: #06b6d4;
+      --cyan-dark: #0891b2;
+      --text: #f0f6ff;
+      --text-muted: #8ba3be;
+      --text-dim: #4a6580;
+      --border: rgba(255,255,255,0.07);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(8,15,26,0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .nav-logo-mark {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--cyan), #2563eb);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 900; color: #fff;
+    }
+
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn-ghost {
+      font-size: 14px; font-weight: 500; color: var(--text-muted);
+      text-decoration: none; padding: 8px 16px; border-radius: 8px;
+      transition: color 0.15s;
+    }
+    .btn-ghost:hover { color: var(--text); }
+
+    .btn-primary {
+      font-size: 14px; font-weight: 600;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan-dark));
+      color: #fff; text-decoration: none;
+      padding: 9px 20px; border-radius: 8px;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+
+    /* ── Page body ── */
+    .legal-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 120px 24px 80px;
+    }
+
+    .legal-eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 12px;
+    }
+
+    .legal-title {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .legal-meta {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .legal-body h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 40px 0 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .legal-body h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 24px 0 8px;
+    }
+
+    .legal-body p {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .legal-body ul, .legal-body ol {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+
+    .legal-body li {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .legal-body a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    .legal-body a:hover { text-decoration: underline; }
+
+    .legal-highlight {
+      background: rgba(6,182,212,0.07);
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 24px 0;
+    }
+
+    .legal-highlight p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .toc {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+
+    .toc p {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .toc ol {
+      padding-left: 20px;
+    }
+
+    .toc li {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .toc a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 48px 40px 32px;
+      margin-top: 80px;
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .footer-links-inline {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links-inline a {
+      font-size: 13px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links-inline a:hover { color: var(--cyan); }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 20px; }
+      .legal-title { font-size: 28px; }
+      .legal-wrap { padding: 100px 20px 60px; }
+      footer { padding: 40px 20px 24px; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark">EP</div>
+    EstimatorPro
+  </a>
+  <div class="nav-actions">
+    <a href="http://localhost:3000/login" class="btn-ghost">Log in</a>
+    <a href="http://localhost:3000/signup" class="btn-primary">Get Started Free</a>
+  </div>
+</nav>
+
+<!-- ── Content ── -->
+<div class="legal-wrap">
+  <p class="legal-eyebrow">Legal</p>
+  <h1 class="legal-title">Privacy Policy</h1>
+  <p class="legal-meta">Effective Date: April 6, 2026 &nbsp;·&nbsp; Last Updated: April 6, 2026</p>
+
+  <div class="legal-highlight">
+    <p><strong style="color:#f0f6ff">Summary:</strong> EstimatorPro collects only what it needs to run the service. We do not sell your personal information. California residents have additional rights under CCPA. We use industry-standard security and never target children under 13.</p>
+  </div>
+
+  <div class="toc">
+    <p>Table of Contents</p>
+    <ol>
+      <li><a href="#section-1">Who We Are</a></li>
+      <li><a href="#section-2">Information We Collect</a></li>
+      <li><a href="#section-3">How We Use Your Information</a></li>
+      <li><a href="#section-4">How We Share Your Information</a></li>
+      <li><a href="#section-5">Cookies and Tracking Technologies</a></li>
+      <li><a href="#section-6">Data Retention</a></li>
+      <li><a href="#section-7">Security</a></li>
+      <li><a href="#section-8">Children's Privacy (COPPA)</a></li>
+      <li><a href="#section-9">Your Rights — California Residents (CCPA)</a></li>
+      <li><a href="#section-10">Your Rights — All Users</a></li>
+      <li><a href="#section-11">Email Communications (CAN-SPAM)</a></li>
+      <li><a href="#section-12">Third-Party Links</a></li>
+      <li><a href="#section-13">Changes to This Policy</a></li>
+      <li><a href="#section-14">Contact Us</a></li>
+    </ol>
+  </div>
+
+  <div class="legal-body">
+
+    <h2 id="section-1">1. Who We Are</h2>
+    <p>EstimatorPro ("Company," "we," "our," or "us") operates the EstimatorPro platform, including the website at myestimator.com and related services (collectively, the "Service"). The Service enables home service businesses ("Tenants") to deploy embeddable price-estimation widgets on their own websites, capture customer leads, and view analytics.</p>
+    <p>This Privacy Policy explains how we collect, use, disclose, and safeguard information when you use our Service — whether as a business (Tenant) or as an end user submitting an estimate through a Tenant's widget (End User).</p>
+
+    <h2 id="section-2">2. Information We Collect</h2>
+
+    <h3>2.1 Information You Provide Directly</h3>
+    <ul>
+      <li><strong>Account registration:</strong> Name, email address, phone number, and company name when a Tenant creates an account.</li>
+      <li><strong>Widget submissions:</strong> When End Users submit an estimate request, we collect email address (required), zip code (required), and optionally name and phone number on behalf of the Tenant.</li>
+      <li><strong>Payment information:</strong> Billing name and payment card details processed by our third-party payment processor (Stripe). We do not store full card numbers.</li>
+      <li><strong>Communications:</strong> Any messages you send us via email, support tickets, or contact forms.</li>
+    </ul>
+
+    <h3>2.2 Information Collected Automatically</h3>
+    <ul>
+      <li><strong>Usage data:</strong> Pages visited, features used, time spent, clicks, and interactions with the Service.</li>
+      <li><strong>Device and log data:</strong> IP address, browser type, operating system, referring URLs, and timestamps.</li>
+      <li><strong>Analytics events:</strong> Widget step views, submissions, and drop-off events. These are first-party, server-side events — no cross-site tracking pixels.</li>
+    </ul>
+
+    <h3>2.3 Information from Third Parties</h3>
+    <p>We may receive information from third-party integrations you connect to the Service (e.g., payment processors, email delivery providers). We use this information solely to provide the Service.</p>
+
+    <h2 id="section-3">3. How We Use Your Information</h2>
+    <p>We use the information we collect to:</p>
+    <ul>
+      <li>Provide, maintain, and improve the Service</li>
+      <li>Process payments and manage subscriptions</li>
+      <li>Send transactional emails (OTP codes, receipts, service alerts)</li>
+      <li>Respond to support requests and inquiries</li>
+      <li>Enforce our Terms of Service and prevent fraud or abuse</li>
+      <li>Comply with applicable law and legal process</li>
+      <li>Generate aggregated, de-identified analytics to improve the platform</li>
+    </ul>
+    <p>We do <strong>not</strong> use your data to build advertising profiles, sell it to data brokers, or target you with third-party advertising.</p>
+
+    <h2 id="section-4">4. How We Share Your Information</h2>
+
+    <h3>4.1 With Tenants (Business Customers)</h3>
+    <p>End User data (email, zip, name, phone, answers, and estimate) submitted through a Tenant's widget is shared with that Tenant. Tenants are the data controllers for their End Users' personal data. Please review the privacy policy of the website where you submitted your estimate.</p>
+
+    <h3>4.2 With Service Providers</h3>
+    <p>We share data with trusted third-party vendors who help us operate the Service, including:</p>
+    <ul>
+      <li><strong>Stripe</strong> — payment processing</li>
+      <li><strong>Resend / email providers</strong> — transactional email delivery</li>
+      <li><strong>Cloud hosting providers</strong> — infrastructure and storage</li>
+    </ul>
+    <p>All service providers are bound by data processing agreements and are prohibited from using your data for their own purposes.</p>
+
+    <h3>4.3 Legal Requirements</h3>
+    <p>We may disclose your information if required by law, court order, or government authority, or if we believe in good faith that disclosure is necessary to protect our rights, your safety, or the safety of others.</p>
+
+    <h3>4.4 Business Transfers</h3>
+    <p>In the event of a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction. We will notify you via email or prominent notice on the Service before your data is transferred and becomes subject to a different privacy policy.</p>
+
+    <h3>4.5 We Do Not Sell Personal Information</h3>
+    <p>We do not sell, rent, or trade your personal information to third parties for monetary or other valuable consideration.</p>
+
+    <h2 id="section-5">5. Cookies and Tracking Technologies</h2>
+    <p>We use the following types of cookies and similar technologies:</p>
+    <ul>
+      <li><strong>Essential cookies:</strong> Session authentication tokens required for the dashboard to function. Cannot be disabled.</li>
+      <li><strong>CSRF cookies:</strong> Security tokens to prevent cross-site request forgery. Cannot be disabled.</li>
+      <li><strong>Analytics:</strong> First-party, server-side event tracking only. We do not use Google Analytics, Facebook Pixel, or other third-party tracking scripts on the widget.</li>
+    </ul>
+    <p>You can configure your browser to block or delete cookies. Blocking essential cookies will prevent you from logging into the dashboard.</p>
+
+    <h2 id="section-6">6. Data Retention</h2>
+    <p>We retain your data for as long as your account is active or as needed to provide the Service. Tenants may configure a custom data retention period for End User submissions. Upon account cancellation, data is retained for 30 days to allow recovery, then permanently deleted. You may request earlier deletion at any time (see Section 10).</p>
+
+    <h2 id="section-7">7. Security</h2>
+    <p>We implement industry-standard security measures including:</p>
+    <ul>
+      <li>HTTPS/TLS encryption for all data in transit</li>
+      <li>Encrypted session tokens stored as httpOnly cookies</li>
+      <li>Password-free authentication via one-time codes (OTP)</li>
+      <li>CSRF protection on all state-mutating requests</li>
+      <li>Content Security Policy headers on all responses</li>
+      <li>Input sanitization to prevent XSS and injection attacks</li>
+      <li>Rate limiting on authentication and form submission endpoints</li>
+    </ul>
+    <p>No method of transmission or storage is 100% secure. While we strive to protect your data, we cannot guarantee absolute security. In the event of a data breach, we will notify affected users as required by applicable law.</p>
+
+    <h2 id="section-8">8. Children's Privacy (COPPA)</h2>
+    <p>The Service is not directed to children under 13 years of age. We do not knowingly collect personal information from children under 13. If we learn that we have inadvertently collected such information, we will promptly delete it. If you believe we have collected information from a child under 13, please contact us at <a href="mailto:privacy@myestimator.com">privacy@myestimator.com</a>.</p>
+
+    <h2 id="section-9">9. Your Rights — California Residents (CCPA / CPRA)</h2>
+    <p>If you are a California resident, the California Consumer Privacy Act (CCPA), as amended by the California Privacy Rights Act (CPRA), grants you the following rights:</p>
+    <ul>
+      <li><strong>Right to Know:</strong> Request disclosure of the categories and specific pieces of personal information we collect, use, disclose, and sell.</li>
+      <li><strong>Right to Delete:</strong> Request deletion of personal information we hold about you, subject to certain exceptions.</li>
+      <li><strong>Right to Correct:</strong> Request correction of inaccurate personal information.</li>
+      <li><strong>Right to Opt-Out of Sale:</strong> We do not sell personal information. No opt-out is required, but you may submit a request to confirm.</li>
+      <li><strong>Right to Non-Discrimination:</strong> We will not discriminate against you for exercising any CCPA rights.</li>
+      <li><strong>Right to Limit Use of Sensitive Personal Information:</strong> We do not process sensitive personal information beyond what is necessary for service delivery.</li>
+    </ul>
+    <p>To exercise your California rights, email <a href="mailto:privacy@myestimator.com">privacy@myestimator.com</a> with the subject line "California Privacy Request." We will respond within 45 days. You may designate an authorized agent to make requests on your behalf.</p>
+
+    <h2 id="section-10">10. Your Rights — All Users</h2>
+    <p>Regardless of location, you have the right to:</p>
+    <ul>
+      <li><strong>Access:</strong> Request a copy of the personal data we hold about you (available via CSV export in your dashboard).</li>
+      <li><strong>Deletion:</strong> Request deletion of your account and all associated data. Tenants may delete all their End User data via <code>Settings → Data → Delete All Data</code> or by contacting us.</li>
+      <li><strong>Portability:</strong> Export your data in CSV or JSON format at any time from your dashboard.</li>
+      <li><strong>Correction:</strong> Update your profile information directly in your account settings.</li>
+    </ul>
+    <p>To submit a request, contact <a href="mailto:privacy@myestimator.com">privacy@myestimator.com</a>.</p>
+
+    <h2 id="section-11">11. Email Communications (CAN-SPAM)</h2>
+    <p>We comply with the CAN-SPAM Act. Transactional emails (OTP codes, receipts, account alerts) are sent as necessary for the Service and cannot be opted out of while your account is active. If we send promotional emails, each will include a clear unsubscribe link. We will process opt-out requests within 10 business days.</p>
+    <p>Our registered business address is included in all commercial email communications. We do not use deceptive subject lines or sender addresses.</p>
+
+    <h2 id="section-12">12. Third-Party Links</h2>
+    <p>The Service may contain links to third-party websites. We are not responsible for the privacy practices of those sites and encourage you to read their privacy policies. This Policy applies solely to information collected by EstimatorPro.</p>
+
+    <h2 id="section-13">13. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify you of material changes by posting the new policy on this page and updating the "Last Updated" date, and where required by law, by sending you an email notification at least 30 days before the change takes effect. Your continued use of the Service after the effective date constitutes acceptance of the updated policy.</p>
+
+    <h2 id="section-14">14. Contact Us</h2>
+    <p>If you have questions, concerns, or requests regarding this Privacy Policy, please contact us:</p>
+    <ul>
+      <li><strong>Email:</strong> <a href="mailto:privacy@myestimator.com">privacy@myestimator.com</a></li>
+      <li><strong>Mailing Address:</strong> EstimatorPro, Legal Department, United States</li>
+    </ul>
+    <p>For data deletion requests, CCPA inquiries, or security concerns, please include "Privacy Request" in your email subject line. We will respond within 45 days.</p>
+
+  </div>
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="footer-bottom">
+    <span>© 2026 EstimatorPro. All rights reserved.</span>
+    <div class="footer-links-inline">
+      <a href="/terms-of-service.html">Terms of Service</a>
+      <a href="/privacy-policy.html">Privacy Policy</a>
+      <a href="/">Home</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

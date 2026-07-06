@@ -1,0 +1,239 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "M MyEstimator" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e4]: M
+      - text: MyEstimator
+    - generic [ref=e5]:
+      - link "Log in" [ref=e6] [cursor=pointer]:
+        - /url: http://localhost:3000/login
+      - link "Get Started Free" [ref=e7] [cursor=pointer]:
+        - /url: http://localhost:3000/signup
+  - generic [ref=e8]:
+    - paragraph [ref=e9]: Legal
+    - heading "Privacy Policy" [level=1] [ref=e10]
+    - paragraph [ref=e11]: "Effective Date: April 6, 2026 · Last Updated: April 6, 2026"
+    - paragraph [ref=e13]:
+      - strong [ref=e14]: "Summary:"
+      - text: MyEstimator collects only what it needs to run the service. We do not sell your personal information. California residents have additional rights under CCPA. We use industry-standard security and never target children under 13.
+    - generic [ref=e15]:
+      - paragraph [ref=e16]: Table of Contents
+      - list [ref=e17]:
+        - listitem [ref=e18]:
+          - link "Who We Are" [ref=e19] [cursor=pointer]:
+            - /url: "#section-1"
+        - listitem [ref=e20]:
+          - link "Information We Collect" [ref=e21] [cursor=pointer]:
+            - /url: "#section-2"
+        - listitem [ref=e22]:
+          - link "How We Use Your Information" [ref=e23] [cursor=pointer]:
+            - /url: "#section-3"
+        - listitem [ref=e24]:
+          - link "How We Share Your Information" [ref=e25] [cursor=pointer]:
+            - /url: "#section-4"
+        - listitem [ref=e26]:
+          - link "Cookies and Tracking Technologies" [ref=e27] [cursor=pointer]:
+            - /url: "#section-5"
+        - listitem [ref=e28]:
+          - link "Data Retention" [ref=e29] [cursor=pointer]:
+            - /url: "#section-6"
+        - listitem [ref=e30]:
+          - link "Security" [ref=e31] [cursor=pointer]:
+            - /url: "#section-7"
+        - listitem [ref=e32]:
+          - link "Children's Privacy (COPPA)" [ref=e33] [cursor=pointer]:
+            - /url: "#section-8"
+        - listitem [ref=e34]:
+          - link "Your Rights — California Residents (CCPA)" [ref=e35] [cursor=pointer]:
+            - /url: "#section-9"
+        - listitem [ref=e36]:
+          - link "Your Rights — All Users" [ref=e37] [cursor=pointer]:
+            - /url: "#section-10"
+        - listitem [ref=e38]:
+          - link "Email Communications (CAN-SPAM)" [ref=e39] [cursor=pointer]:
+            - /url: "#section-11"
+        - listitem [ref=e40]:
+          - link "Third-Party Links" [ref=e41] [cursor=pointer]:
+            - /url: "#section-12"
+        - listitem [ref=e42]:
+          - link "Changes to This Policy" [ref=e43] [cursor=pointer]:
+            - /url: "#section-13"
+        - listitem [ref=e44]:
+          - link "Contact Us" [ref=e45] [cursor=pointer]:
+            - /url: "#section-14"
+    - generic [ref=e46]:
+      - heading "1. Who We Are" [level=2] [ref=e47]
+      - paragraph [ref=e48]: MyEstimator ("Company," "we," "our," or "us") operates the MyEstimator platform, including the website at myestimator.com and related services (collectively, the "Service"). The Service enables home service businesses ("Tenants") to deploy embeddable price-estimation widgets on their own websites, capture customer leads, and view analytics.
+      - paragraph [ref=e49]: This Privacy Policy explains how we collect, use, disclose, and safeguard information when you use our Service — whether as a business (Tenant) or as an end user submitting an estimate through a Tenant's widget (End User).
+      - heading "2. Information We Collect" [level=2] [ref=e50]
+      - heading "2.1 Information You Provide Directly" [level=3] [ref=e51]
+      - list [ref=e52]:
+        - listitem [ref=e53]:
+          - strong [ref=e54]: "Account registration:"
+          - text: Name, email address, phone number, and company name when a Tenant creates an account.
+        - listitem [ref=e55]:
+          - strong [ref=e56]: "Widget submissions:"
+          - text: When End Users submit an estimate request, we collect email address (required), zip code (required), and optionally name and phone number on behalf of the Tenant.
+        - listitem [ref=e57]:
+          - strong [ref=e58]: "Payment information:"
+          - text: Billing name and payment card details processed by our third-party payment processor (Stripe). We do not store full card numbers.
+        - listitem [ref=e59]:
+          - strong [ref=e60]: "Communications:"
+          - text: Any messages you send us via email, support tickets, or contact forms.
+      - heading "2.2 Information Collected Automatically" [level=3] [ref=e61]
+      - list [ref=e62]:
+        - listitem [ref=e63]:
+          - strong [ref=e64]: "Usage data:"
+          - text: Pages visited, features used, time spent, clicks, and interactions with the Service.
+        - listitem [ref=e65]:
+          - strong [ref=e66]: "Device and log data:"
+          - text: IP address, browser type, operating system, referring URLs, and timestamps.
+        - listitem [ref=e67]:
+          - strong [ref=e68]: "Analytics events:"
+          - text: Widget step views, submissions, and drop-off events. These are first-party, server-side events — no cross-site tracking pixels.
+      - heading "2.3 Information from Third Parties" [level=3] [ref=e69]
+      - paragraph [ref=e70]: We may receive information from third-party integrations you connect to the Service (e.g., payment processors, email delivery providers). We use this information solely to provide the Service.
+      - heading "3. How We Use Your Information" [level=2] [ref=e71]
+      - paragraph [ref=e72]: "We use the information we collect to:"
+      - list [ref=e73]:
+        - listitem [ref=e74]: Provide, maintain, and improve the Service
+        - listitem [ref=e75]: Process payments and manage subscriptions
+        - listitem [ref=e76]: Send transactional emails (OTP codes, receipts, service alerts)
+        - listitem [ref=e77]: Respond to support requests and inquiries
+        - listitem [ref=e78]: Enforce our Terms of Service and prevent fraud or abuse
+        - listitem [ref=e79]: Comply with applicable law and legal process
+        - listitem [ref=e80]: Generate aggregated, de-identified analytics to improve the platform
+      - paragraph [ref=e81]:
+        - text: We do
+        - strong [ref=e82]: not
+        - text: use your data to build advertising profiles, sell it to data brokers, or target you with third-party advertising.
+      - heading "4. How We Share Your Information" [level=2] [ref=e83]
+      - heading "4.1 With Tenants (Business Customers)" [level=3] [ref=e84]
+      - paragraph [ref=e85]: End User data (email, zip, name, phone, answers, and estimate) submitted through a Tenant's widget is shared with that Tenant. Tenants are the data controllers for their End Users' personal data. Please review the privacy policy of the website where you submitted your estimate.
+      - heading "4.2 With Service Providers" [level=3] [ref=e86]
+      - paragraph [ref=e87]: "We share data with trusted third-party vendors who help us operate the Service, including:"
+      - list [ref=e88]:
+        - listitem [ref=e89]:
+          - strong [ref=e90]: Stripe
+          - text: — payment processing
+        - listitem [ref=e91]:
+          - strong [ref=e92]: Resend / email providers
+          - text: — transactional email delivery
+        - listitem [ref=e93]:
+          - strong [ref=e94]: Cloud hosting providers
+          - text: — infrastructure and storage
+      - paragraph [ref=e95]: All service providers are bound by data processing agreements and are prohibited from using your data for their own purposes.
+      - heading "4.3 Legal Requirements" [level=3] [ref=e96]
+      - paragraph [ref=e97]: We may disclose your information if required by law, court order, or government authority, or if we believe in good faith that disclosure is necessary to protect our rights, your safety, or the safety of others.
+      - heading "4.4 Business Transfers" [level=3] [ref=e98]
+      - paragraph [ref=e99]: In the event of a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction. We will notify you via email or prominent notice on the Service before your data is transferred and becomes subject to a different privacy policy.
+      - heading "4.5 We Do Not Sell Personal Information" [level=3] [ref=e100]
+      - paragraph [ref=e101]: We do not sell, rent, or trade your personal information to third parties for monetary or other valuable consideration.
+      - heading "5. Cookies and Tracking Technologies" [level=2] [ref=e102]
+      - paragraph [ref=e103]: "We use the following types of cookies and similar technologies:"
+      - list [ref=e104]:
+        - listitem [ref=e105]:
+          - strong [ref=e106]: "Essential cookies:"
+          - text: Session authentication tokens required for the dashboard to function. Cannot be disabled.
+        - listitem [ref=e107]:
+          - strong [ref=e108]: "CSRF cookies:"
+          - text: Security tokens to prevent cross-site request forgery. Cannot be disabled.
+        - listitem [ref=e109]:
+          - strong [ref=e110]: "Analytics:"
+          - text: First-party, server-side event tracking only. We do not use Google Analytics, Facebook Pixel, or other third-party tracking scripts on the widget.
+      - paragraph [ref=e111]: You can configure your browser to block or delete cookies. Blocking essential cookies will prevent you from logging into the dashboard.
+      - heading "6. Data Retention" [level=2] [ref=e112]
+      - paragraph [ref=e113]: We retain your data for as long as your account is active or as needed to provide the Service. Tenants may configure a custom data retention period for End User submissions. Upon account cancellation, data is retained for 30 days to allow recovery, then permanently deleted. You may request earlier deletion at any time (see Section 10).
+      - heading "7. Security" [level=2] [ref=e114]
+      - paragraph [ref=e115]: "We implement industry-standard security measures including:"
+      - list [ref=e116]:
+        - listitem [ref=e117]: HTTPS/TLS encryption for all data in transit
+        - listitem [ref=e118]: Encrypted session tokens stored as httpOnly cookies
+        - listitem [ref=e119]: Password-free authentication via one-time codes (OTP)
+        - listitem [ref=e120]: CSRF protection on all state-mutating requests
+        - listitem [ref=e121]: Content Security Policy headers on all responses
+        - listitem [ref=e122]: Input sanitization to prevent XSS and injection attacks
+        - listitem [ref=e123]: Rate limiting on authentication and form submission endpoints
+      - paragraph [ref=e124]: No method of transmission or storage is 100% secure. While we strive to protect your data, we cannot guarantee absolute security. In the event of a data breach, we will notify affected users as required by applicable law.
+      - heading "8. Children's Privacy (COPPA)" [level=2] [ref=e125]
+      - paragraph [ref=e126]:
+        - text: The Service is not directed to children under 13 years of age. We do not knowingly collect personal information from children under 13. If we learn that we have inadvertently collected such information, we will promptly delete it. If you believe we have collected information from a child under 13, please contact us at
+        - link "privacy@myestimator.com" [ref=e127] [cursor=pointer]:
+          - /url: mailto:privacy@myestimator.com
+        - text: .
+      - heading "9. Your Rights — California Residents (CCPA / CPRA)" [level=2] [ref=e128]
+      - paragraph [ref=e129]: "If you are a California resident, the California Consumer Privacy Act (CCPA), as amended by the California Privacy Rights Act (CPRA), grants you the following rights:"
+      - list [ref=e130]:
+        - listitem [ref=e131]:
+          - strong [ref=e132]: "Right to Know:"
+          - text: Request disclosure of the categories and specific pieces of personal information we collect, use, disclose, and sell.
+        - listitem [ref=e133]:
+          - strong [ref=e134]: "Right to Delete:"
+          - text: Request deletion of personal information we hold about you, subject to certain exceptions.
+        - listitem [ref=e135]:
+          - strong [ref=e136]: "Right to Correct:"
+          - text: Request correction of inaccurate personal information.
+        - listitem [ref=e137]:
+          - strong [ref=e138]: "Right to Opt-Out of Sale:"
+          - text: We do not sell personal information. No opt-out is required, but you may submit a request to confirm.
+        - listitem [ref=e139]:
+          - strong [ref=e140]: "Right to Non-Discrimination:"
+          - text: We will not discriminate against you for exercising any CCPA rights.
+        - listitem [ref=e141]:
+          - strong [ref=e142]: "Right to Limit Use of Sensitive Personal Information:"
+          - text: We do not process sensitive personal information beyond what is necessary for service delivery.
+      - paragraph [ref=e143]:
+        - text: To exercise your California rights, email
+        - link "privacy@myestimator.com" [ref=e144] [cursor=pointer]:
+          - /url: mailto:privacy@myestimator.com
+        - text: with the subject line "California Privacy Request." We will respond within 45 days. You may designate an authorized agent to make requests on your behalf.
+      - heading "10. Your Rights — All Users" [level=2] [ref=e145]
+      - paragraph [ref=e146]: "Regardless of location, you have the right to:"
+      - list [ref=e147]:
+        - listitem [ref=e148]:
+          - strong [ref=e149]: "Access:"
+          - text: Request a copy of the personal data we hold about you (available via CSV export in your dashboard).
+        - listitem [ref=e150]:
+          - strong [ref=e151]: "Deletion:"
+          - text: Request deletion of your account and all associated data. Tenants may delete all their End User data via
+          - code [ref=e152]: Settings → Data → Delete All Data
+          - text: or by contacting us.
+        - listitem [ref=e153]:
+          - strong [ref=e154]: "Portability:"
+          - text: Export your data in CSV or JSON format at any time from your dashboard.
+        - listitem [ref=e155]:
+          - strong [ref=e156]: "Correction:"
+          - text: Update your profile information directly in your account settings.
+      - paragraph [ref=e157]:
+        - text: To submit a request, contact
+        - link "privacy@myestimator.com" [ref=e158] [cursor=pointer]:
+          - /url: mailto:privacy@myestimator.com
+        - text: .
+      - heading "11. Email Communications (CAN-SPAM)" [level=2] [ref=e159]
+      - paragraph [ref=e160]: We comply with the CAN-SPAM Act. Transactional emails (OTP codes, receipts, account alerts) are sent as necessary for the Service and cannot be opted out of while your account is active. If we send promotional emails, each will include a clear unsubscribe link. We will process opt-out requests within 10 business days.
+      - paragraph [ref=e161]: Our registered business address is included in all commercial email communications. We do not use deceptive subject lines or sender addresses.
+      - heading "12. Third-Party Links" [level=2] [ref=e162]
+      - paragraph [ref=e163]: The Service may contain links to third-party websites. We are not responsible for the privacy practices of those sites and encourage you to read their privacy policies. This Policy applies solely to information collected by MyEstimator.
+      - heading "13. Changes to This Policy" [level=2] [ref=e164]
+      - paragraph [ref=e165]: We may update this Privacy Policy from time to time. We will notify you of material changes by posting the new policy on this page and updating the "Last Updated" date, and where required by law, by sending you an email notification at least 30 days before the change takes effect. Your continued use of the Service after the effective date constitutes acceptance of the updated policy.
+      - heading "14. Contact Us" [level=2] [ref=e166]
+      - paragraph [ref=e167]: "If you have questions, concerns, or requests regarding this Privacy Policy, please contact us:"
+      - list [ref=e168]:
+        - listitem [ref=e169]:
+          - strong [ref=e170]: "Email:"
+          - link "privacy@myestimator.com" [ref=e171] [cursor=pointer]:
+            - /url: mailto:privacy@myestimator.com
+        - listitem [ref=e172]:
+          - strong [ref=e173]: "Mailing Address:"
+          - text: MyEstimator, Legal Department, United States
+      - paragraph [ref=e174]: For data deletion requests, CCPA inquiries, or security concerns, please include "Privacy Request" in your email subject line. We will respond within 45 days.
+  - contentinfo [ref=e175]:
+    - generic [ref=e176]:
+      - generic [ref=e177]: © 2026 MyEstimator. All rights reserved.
+      - generic [ref=e178]:
+        - link "Terms of Service" [ref=e179] [cursor=pointer]:
+          - /url: /terms-of-service.html
+        - link "Privacy Policy" [ref=e180] [cursor=pointer]:
+          - /url: /privacy-policy.html
+        - link "Home" [ref=e181] [cursor=pointer]:
+          - /url: /

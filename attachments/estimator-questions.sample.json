@@ -1,0 +1,63 @@
+{
+  "title": "Pool Cost Estimator",
+  "steps": [
+    {
+      "id": "pool_type",
+      "type": "single",
+      "label": "Would you like a pool only or a pool & spa?",
+      "options": ["Pool Only", "Pool & Spa"]
+    },
+    {
+      "id": "pool_size",
+      "type": "single",
+      "label": "What size pool are you looking for?",
+      "options": ["Regular 15x30", "Medium 17x35", "Large 20x40"]
+    },
+    {
+      "id": "pool_shape",
+      "type": "single",
+      "label": "What shape would you like your pool?",
+      "options": ["Freeform / Curvy", "Straight / Modern"]
+    },
+    {
+      "id": "water_features",
+      "type": "multiple",
+      "label": "What water features would you like?",
+      "options": ["Sheet Fall", "Natural Rock", "Bubblers", "Deck Jets", "Water Bowls", "Fire Water Bowls"]
+    },
+    {
+      "id": "upgrades",
+      "type": "multiple",
+      "label": "Pool Upgrades",
+      "options": ["Salt Water", "LED Color Lighting", "Pool Automation", "Umbrella Sleeve", "Glass Trim Tile", "Hand Rail"]
+    },
+    {
+      "id": "interior_finish",
+      "type": "single",
+      "label": "What interior finish would you like?",
+      "options": ["Premium White Plaster", "Shimmer Quartz", "PebbleTec"]
+    },
+    {
+      "id": "patio",
+      "type": "single",
+      "label": "Would you like a concrete patio or coping only?",
+      "options": ["Coping Only", "Concrete"]
+    },
+    {
+      "id": "solar",
+      "type": "single",
+      "label": "Would you like solar heating for your pool?",
+      "options": ["No", "Yes"]
+    },
+    {
+      "id": "equipment",
+      "type": "single",
+      "label": "What type of equipment would you like?",
+      "options": ["Cartridge", "Media / Sand", "e3 / Eco Technology"]
+    }
+  ],
+  "lead": {
+    "required": ["name", "phone", "email"],
+    "optional": ["zip"]
+  }
+}

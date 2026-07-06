@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EstimatorPro — Turn Your Website Into a Lead Machine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080f1a;
+      --bg2: #0d1828;
+      --bg3: #111f35;
+      --cyan: #06b6d4;
+      --cyan-dark: #0891b2;
+      --text: #f0f6ff;
+      --text-muted: #8ba3be;
+      --text-dim: #4a6580;
+      --border: rgba(255,255,255,0.07);
+      --card: rgba(13,24,40,0.8);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(8,15,26,0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .nav-logo-mark {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--cyan), #0284c7);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 900; color: white;
+      box-shadow: 0 0 16px rgba(6,182,212,0.4);
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+
+    .btn-ghost {
+      color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500;
+      padding: 7px 14px; border-radius: 8px; transition: color 0.15s, background 0.15s;
+    }
+    .btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), var(--cyan-dark));
+      color: white; text-decoration: none; font-size: 14px; font-weight: 600;
+      padding: 8px 18px; border-radius: 8px;
+      transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 0 20px rgba(6,182,212,0.3);
+      display: inline-block;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 24px rgba(6,182,212,0.45); }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 130px 20px 100px;
+      position: relative; overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+      width: 900px; height: 700px;
+      background: radial-gradient(ellipse at center, rgba(6,182,212,0.13) 0%, transparent 68%);
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute; bottom: -50px; right: -150px;
+      width: 500px; height: 500px;
+      background: radial-gradient(ellipse, rgba(2,132,199,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25);
+      color: var(--cyan); font-size: 11px; font-weight: 700;
+      padding: 5px 13px; border-radius: 999px; margin-bottom: 28px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      position: relative; z-index: 1;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--cyan); box-shadow: 0 0 6px var(--cyan);
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+    .hero-headline {
+      font-size: clamp(38px, 5.8vw, 72px);
+      font-weight: 900; line-height: 1.04; letter-spacing: -0.04em;
+      text-align: center; max-width: 840px; margin-bottom: 22px;
+      position: relative; z-index: 1;
+    }
+
+    .hero-headline em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--cyan) 0%, #38bdf8 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 18px; color: var(--text-muted); text-align: center;
+      max-width: 520px; margin-bottom: 44px; line-height: 1.72;
+      position: relative; z-index: 1;
+    }
+
+    .hero-cta {
+      display: flex; gap: 12px; margin-bottom: 52px; flex-wrap: wrap; justify-content: center;
+      position: relative; z-index: 1;
+    }
+
+    .btn-lg { font-size: 15px !important; padding: 13px 30px !important; border-radius: 10px !important; }
+
+    .btn-outline {
+      background: transparent; border: 1.5px solid var(--border);
+      color: var(--text-muted); text-decoration: none; font-size: 15px; font-weight: 500;
+      padding: 12px 30px; border-radius: 10px;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.2); color: var(--text); background: rgba(255,255,255,0.04); }
+
+    .scroll-hint {
+      font-size: 13px; color: var(--text-dim);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      margin-bottom: 52px; position: relative; z-index: 1;
+    }
+    .scroll-arrow {
+      width: 18px; height: 18px;
+      border-right: 2px solid var(--text-dim); border-bottom: 2px solid var(--text-dim);
+      transform: rotate(45deg); animation: arrowbounce 2s infinite;
+    }
+    @keyframes arrowbounce { 0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(5px)} }
+
+    .widget-wrap {
+      width: 100%; max-width: 520px; position: relative; z-index: 2;
+    }
+    .widget-wrap::before {
+      content: '';
+      position: absolute; inset: -1px; border-radius: 18px;
+      background: linear-gradient(135deg, rgba(6,182,212,0.25), transparent 55%);
+      z-index: -1;
+    }
+
+    /* ── Shared section ── */
+    section { padding: 96px 20px; position: relative; z-index: 1; }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--cyan); margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(26px, 3.2vw, 42px); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 14px;
+    }
+    .section-sub { font-size: 16px; color: var(--text-muted); max-width: 500px; line-height: 1.7; }
+
+    /* ── Social proof bar ── */
+    .proof-bar {
+      background: var(--bg2);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 56px 20px;
+    }
+    .proof-bar-label {
+      text-align: center; font-size: 12px; color: var(--text-dim);
+      font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 36px;
+    }
+    .proof-cards { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+
+    .proof-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 26px 30px; width: 270px;
+      transition: border-color 0.2s, transform 0.2s;
+      backdrop-filter: blur(8px);
+    }
+    .proof-card:hover { border-color: rgba(6,182,212,0.3); transform: translateY(-3px); }
+    .proof-card-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .proof-card-loc { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+    .proof-stat { font-size: 30px; font-weight: 900; color: var(--cyan); letter-spacing: -0.02em; margin-bottom: 3px; }
+    .proof-stat-label { font-size: 12px; color: var(--text-dim); font-weight: 500; }
+
+    /* ── Dashboard preview ── */
+    .preview-bg { background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%); }
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; }
+
+    .preview-img-wrap {
+      border-radius: 16px; overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 40px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(6,182,212,0.07);
+      position: relative;
+    }
+    .preview-img-wrap img { width: 100%; display: block; }
+    .preview-img-wrap::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(8,15,26,0.35) 0%, transparent 55%);
+    }
+
+    /* ── Pillars ── */
+    .pillars {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; margin-top: 56px;
+    }
+    .pillar {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 30px 26px; backdrop-filter: blur(8px);
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .pillar:hover {
+      border-color: rgba(6,182,212,0.25); transform: translateY(-3px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 0 1px rgba(6,182,212,0.1);
+    }
+    .pillar-icon {
+      width: 44px; height: 44px; background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.2); border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px; margin-bottom: 18px;
+    }
+    .pillar h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.01em; }
+    .pillar p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+    /* ── How it works ── */
+    .steps-bg { background: var(--bg2); }
+    .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 32px; margin-top: 56px; position: relative; }
+    .steps::before {
+      content: ''; position: absolute; top: 23px;
+      left: calc(16.67% + 10px); right: calc(16.67% + 10px);
+      height: 1px; background: linear-gradient(90deg, transparent, rgba(6,182,212,0.3), transparent);
+    }
+    .step { text-align: center; padding: 0 12px; }
+    .step-num {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan-dark));
+      color: white; font-size: 18px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; box-shadow: 0 0 24px rgba(6,182,212,0.4);
+    }
+    .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+    .step p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+    /* ── Metrics ── */
+    .metrics-bg { background: linear-gradient(135deg, rgba(6,182,212,0.05), transparent 70%); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .metrics-headline {
+      font-size: clamp(22px, 3vw, 38px); font-weight: 800; letter-spacing: -0.03em;
+      text-align: center; max-width: 640px; margin: 0 auto 56px;
+    }
+    .metrics-headline span { color: var(--cyan); }
+    .metrics-grid {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 2px; background: var(--border); border-radius: 16px; overflow: hidden;
+    }
+    .metric { background: var(--bg2); padding: 36px 20px; text-align: center; }
+    .metric-val { font-size: 40px; font-weight: 900; color: var(--cyan); letter-spacing: -0.03em; line-height: 1; margin-bottom: 8px; }
+    .metric-lbl { font-size: 13px; color: var(--text-muted); line-height: 1.5; font-weight: 500; }
+
+    /* ── Industries ── */
+    .industries { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: 48px; }
+    .industry {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 24px 18px; text-align: center;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .industry:hover { border-color: rgba(6,182,212,0.3); transform: translateY(-2px); }
+    .industry.active { border-color: rgba(6,182,212,0.4); background: rgba(6,182,212,0.06); }
+    .industry-icon { font-size: 26px; margin-bottom: 10px; }
+    .industry-name { font-size: 14px; font-weight: 600; }
+    .industry.active .industry-name { color: var(--cyan); }
+
+    /* ── CTA ── */
+    .cta-section { text-align: center; padding: 120px 20px; position: relative; overflow: hidden; }
+    .cta-section::before {
+      content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 800px; height: 400px;
+      background: radial-gradient(ellipse, rgba(6,182,212,0.1), transparent 70%);
+    }
+    .cta-headline { font-size: clamp(26px,4vw,52px); font-weight: 900; letter-spacing: -0.03em; max-width: 660px; margin: 0 auto 18px; line-height: 1.1; }
+    .cta-sub { font-size: 16px; color: var(--text-muted); margin-bottom: 38px; }
+    .cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+
+    /* ── Footer ── */
+    footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 56px 40px 32px; }
+    .footer-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 52px; margin-bottom: 40px; }
+    .footer-brand p { font-size: 14px; color: var(--text-muted); margin-top: 14px; line-height: 1.65; max-width: 260px; }
+    .footer-col-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.15s; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-bottom { max-width: 1100px; margin: 0 auto; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-dim); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .pillars, .steps, .industries { grid-template-columns: 1fr; }
+      .preview-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+      .steps::before { display: none; }
+      .metrics-grid { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark">EP</div>
+    EstimatorPro
+  </a>
+  <ul class="nav-links">
+    <li><a href="/" class="active">Home</a></li>
+    <li><a href="/pricing.html">Pricing</a></li>
+    <li><a href="/contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="http://localhost:3000/login" class="btn-ghost">Log in</a>
+    <a href="http://localhost:3000/signup" class="btn-primary">Get Started Free</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="badge"><span class="badge-dot"></span> Built for Pool Builders</div>
+
+  <h1 class="hero-headline">
+    Your Website Should Be<br><em>Selling for You</em>
+  </h1>
+
+  <p class="hero-sub">
+    Embed an interactive estimator that qualifies leads and captures contact info — so only serious buyers reach out.
+  </p>
+
+  <div class="hero-cta">
+    <a href="http://localhost:3000/signup" class="btn-primary btn-lg">Start Free Trial</a>
+    <a href="#how-it-works" class="btn-outline btn-lg">See how it works ↓</a>
+  </div>
+
+  <div class="scroll-hint">
+    Try the estimator below
+    <div class="scroll-arrow"></div>
+  </div>
+
+  <div class="widget-wrap">
+    <div id="estimator-widget"
+      data-key="26920aadc92ed1e98a274fdae4258cc7"
+      data-api-url="http://localhost:4000/api/v1">
+    </div>
+  </div>
+</section>
+
+<!-- ── Social proof ── -->
+<div class="proof-bar">
+  <div class="container">
+    <p class="proof-bar-label">Trusted by pool builders across the country</p>
+    <div class="proof-cards">
+      <div class="proof-card">
+        <div class="proof-card-name">Aquos Pools</div>
+        <div class="proof-card-loc">Manteca, CA</div>
+        <div class="proof-stat">340%</div>
+        <div class="proof-stat-label">increase in qualified leads</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-card-name">Laguna Pool &amp; Spa</div>
+        <div class="proof-card-loc">Las Vegas, NV</div>
+        <div class="proof-stat">$2.4M</div>
+        <div class="proof-stat-label">revenue from widget leads</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-card-name">BlueLine Pools</div>
+        <div class="proof-card-loc">Phoenix, AZ</div>
+        <div class="proof-stat">78%</div>
+        <div class="proof-stat-label">lead-to-consultation rate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Dashboard preview ── -->
+<section class="preview-bg">
+  <div class="container">
+    <div class="preview-grid">
+      <div>
+        <p class="section-eyebrow">Real-Time Dashboard</p>
+        <h2 class="section-title">Every lead, every estimate — in one place</h2>
+        <p class="section-sub">See who submitted, what they want, and what they were quoted. Export to CSV, filter by date, track drop-off by step.</p>
+        <br><br>
+        <a href="http://localhost:3000/signup" class="btn-primary">View your dashboard →</a>
+      </div>
+      <div class="preview-img-wrap">
+        <img src="/analytics-dashboard.png" alt="Analytics Dashboard" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Value pillars ── -->
+<section>
+  <div class="container">
+    <p class="section-eyebrow">Why EstimatorPro</p>
+    <h2 class="section-title">Stop losing leads to your competitors</h2>
+    <p class="section-sub">Most pool shoppers visit 3–5 websites before calling anyone. Be the one that gives them a number instantly.</p>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-icon">🎯</div>
+        <h3>Qualify Every Lead Before They Call</h3>
+        <p>Your estimator walks visitors through a guided flow and captures their budget range, zip code, and contact info before they reach you.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">⏰</div>
+        <h3>Lead Capture Operating 24/7</h3>
+        <p>Your website works while you sleep. Leads captured at 2am are in your dashboard by 9am — no missed opportunities ever.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">📊</div>
+        <h3>Real-Time Analytics Access</h3>
+        <p>See which questions cause drop-off, which zip codes dominate your leads, and exactly what your average lead is worth.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works ── -->
+<section class="steps-bg" id="how-it-works">
+  <div class="container">
+    <p class="section-eyebrow" style="text-align:center">Setup in minutes</p>
+    <h2 class="section-title" style="text-align:center; margin:0 auto 8px; max-width:480px">Three steps to your first lead</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Build Your Estimator</h3>
+        <p>Use our guided builder to add your questions, set pricing ranges, and configure your service area. No code needed.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Embed on Your Website</h3>
+        <p>Copy two lines of code and paste into any page — WordPress, Squarespace, Wix, or plain HTML.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Start Getting Leads</h3>
+        <p>Visitors get instant estimates. You get qualified leads with contact info, answers, and budget range — automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ROI metrics ── -->
+<section class="metrics-bg">
+  <div class="container">
+    <h2 class="metrics-headline"><span>1 pool job</span> pays for EstimatorPro for 20+ months</h2>
+    <div class="metrics-grid">
+      <div class="metric">
+        <div class="metric-val">78%</div>
+        <div class="metric-lbl">lead-to-consultation conversion rate</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">24/7</div>
+        <div class="metric-lbl">automated lead capture while you're off the clock</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">5 min</div>
+        <div class="metric-lbl">response time = 9× more likely to close</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">2 lines</div>
+        <div class="metric-lbl">of code to embed on any website</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Industries ── -->
+<section>
+  <div class="container">
+    <p class="section-eyebrow">Expanding to more trades</p>
+    <h2 class="section-title">Built for pool builders, coming soon to more</h2>
+    <div class="industries">
+      <div class="industry active">
+        <div class="industry-icon">🏊</div>
+        <div class="industry-name">Pool Builders</div>
+      </div>
+      <div class="industry">
+        <div class="industry-icon">🏗️</div>
+        <div class="industry-name">General Contractors</div>
+      </div>
+      <div class="industry">
+        <div class="industry-icon">❄️</div>
+        <div class="industry-name">HVAC Companies</div>
+      </div>
+      <div class="industry">
+        <div class="industry-icon">🔨</div>
+        <div class="industry-name">Remodelers</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section">
+  <div class="container">
+    <h2 class="cta-headline">Ready to Turn Your Website Into a Lead Machine?</h2>
+    <p class="cta-sub">Join hundreds of pool builders capturing qualified leads every day.</p>
+    <div class="cta-btns">
+      <a href="http://localhost:3000/signup" class="btn-primary btn-lg">Get Started Free</a>
+      <a href="/pricing.html" class="btn-outline btn-lg">View Pricing</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="/" class="nav-logo"><div class="nav-logo-mark">EP</div>EstimatorPro</a>
+      <p>The embeddable price estimator platform for home service businesses. Capture leads, qualify buyers, close more jobs.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Pages</div>
+      <ul class="footer-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/pricing.html">Pricing</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+        <li><a href="http://localhost:3000/login">Login</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="/terms-of-service.html">Terms of Service</a></li>
+        <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+        <li><a href="#">Twitter / X</a></li>
+        <li><a href="#">LinkedIn</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 EstimatorPro. All rights reserved.</span>
+    <span>Built for pool builders who want more leads.</span>
+  </div>
+</footer>
+
+<script src="/src/main.tsx" type="module"></script>
+</body>
+</html>
