@@ -141,7 +141,7 @@ export function createIntegrationRoutes(db: NodePgDatabase<typeof schema>): Hono
     setCookie(c, STATE_COOKIE, state, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      sameSite: env.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/',
       maxAge: 300,
     });

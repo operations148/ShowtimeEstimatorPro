@@ -61,7 +61,7 @@ export function createAuthRoutes(service: AuthService): Hono {
     setCookie(c, SESSION_COOKIE_NAME, result.value.token, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      sameSite: env.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/',
       maxAge: SESSION_EXPIRY_SECONDS,
     });
@@ -75,7 +75,7 @@ export function createAuthRoutes(service: AuthService): Hono {
     setCookie(c, 'csrf_token', token, {
       httpOnly: false, // must be readable by client-side JS
       secure: env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      sameSite: env.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/',
       maxAge: 60 * 60, // 1 hour
     });
@@ -86,7 +86,7 @@ export function createAuthRoutes(service: AuthService): Hono {
     setCookie(c, SESSION_COOKIE_NAME, '', {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      sameSite: env.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/',
       maxAge: 0,
     });
@@ -121,7 +121,7 @@ export function createAuthRoutes(service: AuthService): Hono {
     setCookie(c, 'google_oauth_state', state, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      sameSite: env.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/',
       maxAge: 300, // 5 minutes
     });
@@ -205,7 +205,7 @@ export function createAuthRoutes(service: AuthService): Hono {
       setCookie(c, SESSION_COOKIE_NAME, token, {
         httpOnly: true,
         secure: env.NODE_ENV === 'production',
-        sameSite: 'Lax',
+        sameSite: env.NODE_ENV === 'production' ? 'None' : 'Lax',
         path: '/',
         maxAge: SESSION_EXPIRY_SECONDS,
       });
@@ -297,7 +297,7 @@ export function createAuthRoutes(service: AuthService): Hono {
     setCookie(c, SESSION_COOKIE_NAME, sessionToken, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      sameSite: env.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/',
       maxAge: SESSION_EXPIRY_SECONDS,
     });
