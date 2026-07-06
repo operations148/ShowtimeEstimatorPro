@@ -15,3 +15,5 @@ coverage/
 
 # Uploaded media (per-tenant logos/images) — user content, not source
 apps/api/public/uploads/
+
+.vercel

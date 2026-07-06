@@ -109,7 +109,8 @@
       "PowerShell(Set-Location \"D:\\\\Claude Code\\\\estimator-platform-scaffold\"; try { $who = vercel whoami 2>&1; Write-Output \"whoami: $who\" } catch { Write-Output \"not logged in\" })",
       "PowerShell(Set-Location \"D:\\\\Claude Code\\\\estimator-platform-scaffold\"; corepack pnpm --filter api typecheck 2>&1 | Select-String -Pattern \"error TS\" | Where-Object { $_ -notmatch '__tests__|test-setup' } | ForEach-Object { \\($_ -replace '\\\\s+',' '\\).Trim\\(\\) } | Select-Object -First 70)",
       "PowerShell(Set-Location \"D:\\\\Claude Code\\\\estimator-platform-scaffold\"; corepack pnpm --filter api typecheck 2>&1 | Select-String -Pattern \"error TS\" | Where-Object { $_ -notmatch '__tests__|test-setup' } | ForEach-Object { \\($_ -replace '\\\\s+',' '\\).Trim\\(\\) } | Select-Object -First 40)",
-      "PowerShell(Set-Location \"D:\\\\Claude Code\\\\estimator-platform-scaffold\"; $errs = corepack pnpm --filter api typecheck 2>&1 | Select-String -Pattern \"error TS\"; $nonTest = $errs | Where-Object { $_ -notmatch '__tests__|test-setup' }; $test = $errs | Where-Object { $_ -match '__tests__|test-setup' }; Write-Output \\(\"PROD errors: \" + $nonTest.Count\\); Write-Output \\(\"TEST errors: \" + $test.Count\\))"
+      "PowerShell(Set-Location \"D:\\\\Claude Code\\\\estimator-platform-scaffold\"; $errs = corepack pnpm --filter api typecheck 2>&1 | Select-String -Pattern \"error TS\"; $nonTest = $errs | Where-Object { $_ -notmatch '__tests__|test-setup' }; $test = $errs | Where-Object { $_ -match '__tests__|test-setup' }; Write-Output \\(\"PROD errors: \" + $nonTest.Count\\); Write-Output \\(\"TEST errors: \" + $test.Count\\))",
+      "Read(//c/Users/PC Geek/AppData/Local/com.vercel.cli/**)"
     ],
     "additionalDirectories": [
       "C:\\Users\\PC Geek\\AppData\\Roaming",
