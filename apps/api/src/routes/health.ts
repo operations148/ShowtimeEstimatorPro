@@ -1,11 +1,9 @@
 import { Hono } from 'hono';
 import { sql } from 'drizzle-orm';
-import { createRequire } from 'module';
 import { db } from '../models/db';
 import { env } from '../env';
 
-const _require = createRequire(import.meta.url);
-const { version: APP_VERSION } = _require('../../package.json') as { version: string };
+const APP_VERSION = '0.0.1';
 
 export const healthRoutes = new Hono();
 

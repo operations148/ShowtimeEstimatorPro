@@ -13,14 +13,12 @@
  */
 
 import { sql } from 'drizzle-orm';
-import { createRequire } from 'module';
 import { createEmailProvider, createSmsProvider, createPaymentProvider } from '@repo/provider-adapters';
 import { db } from './models/db';
 import { env } from './env';
 import { logger } from './lib/logger';
 
-const _require = createRequire(import.meta.url);
-const { version: APP_VERSION } = _require('../package.json') as { version: string };
+const APP_VERSION = '0.0.1';
 
 export async function validateStartup(): Promise<void> {
   logger.info(
