@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
@@ -10,7 +11,17 @@ const ERROR_MESSAGES: Record<string, string> = {
   session_expired: 'Your session expired. Please sign in again.',
 };
 
+// useSearchParams() requires a Suspense boundary for static prerendering —
+// without it `next build` fails with "missing-suspense-with-csr-bailout".
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const searchParams = useSearchParams();
   const errorKey = searchParams?.get('error') ?? '';
   const errorMessage = ERROR_MESSAGES[errorKey] ?? null;

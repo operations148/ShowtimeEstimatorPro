@@ -17,7 +17,7 @@
   <div
     id="estimator-widget"
     data-key="26920aadc92ed1e98a274fdae4258cc7"
-    data-api-url="http://localhost:4000/api/v1"
+    data-api-url="https://estimatorpro-api-two.vercel.app/api/v1"
   ></div>
   <script>
     // Allow the dashboard "View Estimator" button to pass a specific key via ?key=
@@ -26,7 +26,6 @@
       document.getElementById('estimator-widget').setAttribute('data-key', urlKey);
     }
   </script>
-  <script src="/src/main.tsx" type="module"></script>
-  <!-- In production, use: <script src="https://cdn.example.com/widget.iife.js"></script> -->
+  <script src="/widget.iife.js"></script>
 </body>
 </html>
