@@ -167,7 +167,10 @@
       "Bash(curl -s --max-time 15 \"https://estimatorpro-api-two.vercel.app/api/v1/health\" -w \"\\\\nHTTP:%{http_code} TIME:%{time_total}s\\\\n\")",
       "Bash(vercel login *)",
       "Bash(curl -s --max-time 12 -X POST https://estimatorpro-api-two.vercel.app/api/v1/submissions -H 'Content-Type: application/json' -d '{\"estimatorPublicKey\":\"26920aadc92ed1e98a274fdae4258cc7\",\"lead\":{\"name\":\"Log Test\",\"phone\":\"555-0100\",\"email\":\"logtest@test.com\"},\"answers\":{},\"sessionId\":\"log-test\"}' -w '\\\\nHTTP:%{http_code}\\\\n')",
-      "Bash(vercel billing *)"
+      "Bash(vercel billing *)",
+      "Bash(curl -s --max-time 10 -X POST https://estimatorpro-api-two.vercel.app/api/v1/submissions -H 'Content-Type: application/json' -d '{\"estimatorPublicKey\":\"26920aadc92ed1e98a274fdae4258cc7\",\"lead\":{\"name\":\"Manual Log Check\",\"phone\":\"555-0199\",\"email\":\"manuallogcheck@test.com\"},\"answers\":{},\"sessionId\":\"manual-check\"}' -w '\\\\nresult: HTTP %{http_code}, took %{time_total}s\\\\n')",
+      "Bash(pkill -f \"repro-post-hang.mjs\")",
+      "Bash(echo \"EXIT: $?\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\PC Geek\\AppData\\Roaming",

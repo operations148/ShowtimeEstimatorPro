@@ -88,7 +88,9 @@ export function createSubmissionRoutes(
       .limit(1);
 
     if (leadZip && !isServed && tenant?.serviceAreaBehavior === 'block') {
-      void analyticsService
+      // Awaited, not fire-and-forget — see the comment above the "submit" track()
+      // call below for why.
+      await analyticsService
         .track({
           tenantId: est.tenantId,
           estimatorId: est.id,
@@ -165,8 +167,16 @@ export function createSubmissionRoutes(
       })
       .returning();
 
-    // Track submit event (fire-and-forget)
-    void analyticsService
+    // Track submit event.
+    //
+    // Awaited (not fire-and-forget): Vercel's serverless runtime freezes the function
+    // the instant the HTTP response is sent. Any unawaited async work in flight at
+    // that moment never resumes — and if it was mid-query, it leaves that connection
+    // checked out of the pool forever. With the production pool capped at a single
+    // connection (see models/db.ts), one frozen background task is enough to hang
+    // every subsequent request on that warm instance, including unrelated routes.
+    // Errors are still swallowed so a tracking failure never fails the submission.
+    await analyticsService
       .track({
         tenantId: est.tenantId,
         estimatorId: est.id,
@@ -175,10 +185,10 @@ export function createSubmissionRoutes(
       })
       .catch(() => {});
 
-    // Notify tenant recipients (fire-and-forget)
+    // Notify tenant recipients (awaited — see comment above).
     const recipients = tenant?.notificationRecipients as string[] | undefined;
     if (recipients && recipients.length > 0) {
-      notificationService
+      await notificationService
         .notifyNewLead(
           recipients.map((email) => ({ email })),
           {
@@ -194,10 +204,10 @@ export function createSubmissionRoutes(
         .catch((e) => logger.error({ err: e }, 'NotificationService: failed to send lead notification'));
     }
 
-    // Dispatch to CRM integrations (fire-and-forget). Gated on the tenant's
-    // integration config — independent of notificationRecipients.
+    // Dispatch to CRM integrations (awaited — see comment above). Gated on the
+    // tenant's integration config — independent of notificationRecipients.
     if (tenant?.integrations) {
-      integrationDispatch
+      await integrationDispatch
         .dispatchNewLead(tenant.integrations, {
           submissionId: submission!.id,
           name: lead.name,

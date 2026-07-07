@@ -26,7 +26,13 @@ export function createAnalyticsRoutes(
     }
 
     // tenantId is resolved from the body; production should look it up from the estimator
-    void analyticsService
+    //
+    // Awaited (not fire-and-forget): on Vercel's serverless runtime the function is
+    // frozen the moment the response is sent, so any unawaited async work in flight
+    // never completes — and worse, it can leave a DB connection checked out of the
+    // pool forever, hanging every subsequent request on that instance. Errors are
+    // still swallowed so a tracking failure never fails the widget's request.
+    await analyticsService
       .track({
         tenantId: (body as Record<string, unknown>).tenantId as string ?? 'unknown',
         ...parsed.data,
