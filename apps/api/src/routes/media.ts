@@ -102,10 +102,13 @@ mediaRoutes.post('/upload', requireAuth, async (c) => {
     const objectPath = `${auth.tenantId}/${filename}`;
     const base = env.SUPABASE_URL.replace(/\/$/, '');
 
+    // Send the key in BOTH headers so either credential type works: the new
+    // `sb_secret_…` secret keys and the legacy `service_role` JWT.
     const res = await fetch(`${base}/storage/v1/object/${bucket}/${objectPath}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
         'Content-Type': file.type,
         'x-upsert': 'true',
       },
