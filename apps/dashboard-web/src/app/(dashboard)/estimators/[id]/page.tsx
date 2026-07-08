@@ -688,7 +688,7 @@ export default function EstimatorDetailPage({ params }: { params: { id: string }
         </div>
         <div className="flex items-center gap-2 mt-1">
           <a
-            href={`http://localhost:5173/embed-example.html?key=${estimator.publicKey}`}
+            href={`${process.env.NEXT_PUBLIC_WIDGET_URL ?? 'http://localhost:5173'}/embed-example.html?key=${estimator.publicKey}`}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 px-3 py-2 border border-brand-300 text-sm font-medium text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors"

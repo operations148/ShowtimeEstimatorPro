@@ -379,11 +379,15 @@ export function createEstimatorRoutes(
       );
     }
 
-    const apiUrl = env.CORS_WIDGET_ORIGINS.split(',')[0] ?? 'http://localhost:5173';
+    // The widget bundle is served from the widget origin (CORS_WIDGET_ORIGINS),
+    // but data-api-url must point at THIS API — derive it from the request origin
+    // (works behind Vercel via the x-forwarded-proto/host the bridge sets).
+    const widgetUrl = env.CORS_WIDGET_ORIGINS.split(',')[0] ?? 'http://localhost:5173';
+    const apiUrl = new URL(c.req.url).origin;
     const snippet = [
       `<!-- Estimator Widget: ${est.title} -->`,
       `<div id="estimator-widget" data-key="${est.publicKey}" data-api-url="${apiUrl}/api/v1"></div>`,
-      `<script src="${apiUrl}/widget.iife.js"></script>`,
+      `<script src="${widgetUrl}/widget.iife.js"></script>`,
     ].join('\n');
 
     return c.json({ data: { snippet, publicKey: est.publicKey }, error: null });
