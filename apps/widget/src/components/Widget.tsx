@@ -142,6 +142,9 @@ function ImageCard({
   placeholderIndex?: number;
 }) {
   const placeholder = PLACEHOLDER_GRADIENTS[(placeholderIndex ?? 0) % PLACEHOLDER_GRADIENTS.length];
+  // Reveal the photo only once this specific card is selected — before that,
+  // every option shows the same plain placeholder so nothing "spoils" upfront.
+  const showImage = !!imgUrl && selected;
 
   return (
     <button
@@ -149,15 +152,15 @@ function ImageCard({
       onClick={onClick}
       aria-pressed={selected}
       className={`ep-card${selected ? ' ep-card--selected' : ''}`}
-      style={{ background: imgUrl ? '#0f2035' : placeholder }}
+      style={{ background: showImage ? '#0f2035' : placeholder }}
     >
-      {imgUrl ? (
+      {showImage ? (
         <img className="ep-card-img" src={imgUrl} alt={label} loading="lazy" />
       ) : (
         <span className="ep-card-ph" style={{ background: placeholder }} />
       )}
       <span className="ep-card-label">{label}</span>
-      {imgUrl && <span className="ep-card-scrim" />}
+      {showImage && <span className="ep-card-scrim" />}
     </button>
   );
 }
@@ -398,10 +401,9 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
         <div className="ep-shell">
           {/* ── Left rail: branding + reveal CTA + price card ── */}
           <div className="ep-rail-logo">
-            {logoUrl ? (
+            <span className="ep-rail-orgname">{config.tenantName || config.title}</span>
+            {logoUrl && (
               <img src={logoUrl} alt={config.tenantName || 'Logo'} className="ep-logo-img" />
-            ) : (
-              <span className="ep-logo-word">{config.tenantName || config.title}</span>
             )}
           </div>
 
@@ -641,9 +643,19 @@ const WIDGET_CSS = `
   background: var(--ep-rail);
   border-right: 1px solid var(--ep-border);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 14px;
   padding: 28px 20px 8px;
+}
+.ep-rail-orgname {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ep-muted);
+  text-align: center;
 }
 .ep-rail-cta {
   grid-area: cta;
@@ -655,8 +667,7 @@ const WIDGET_CSS = `
   gap: 16px;
   padding: 8px 20px 32px;
 }
-.ep-logo-img { max-width: 100%; max-height: 52px; object-fit: contain; display: block; }
-.ep-logo-word { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #fff; text-align: center; }
+.ep-logo-img { max-width: 100%; max-height: 74px; object-fit: contain; display: block; }
 
 /* ── Reveal CTA ── */
 .ep-reveal {
