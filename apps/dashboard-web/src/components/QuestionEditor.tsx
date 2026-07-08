@@ -51,7 +51,9 @@ function ImagePicker({
   onSelect: (url: string) => void;
   onClose: () => void;
 }) {
-  const [tab, setTab] = useState<'unsplash' | 'upload'>('unsplash');
+  // Unsplash search is disabled until an UNSPLASH_ACCESS_KEY is configured server-side;
+  // default to device upload and hide the Unsplash tab (the search UI below stays dormant).
+  const [tab, setTab] = useState<'unsplash' | 'upload'>('upload');
   const [query, setQuery] = useState(optionLabel);
   const [searchQuery, setSearchQuery] = useState(optionLabel);
   const [page, setPage] = useState(1);
@@ -159,11 +161,8 @@ function ImagePicker({
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs (Unsplash hidden until a server-side access key is configured) */}
         <div className="flex border-b border-gray-100 px-4">
-          <button className={tabCls('unsplash')} onClick={() => setTab('unsplash')}>
-            🔍 Unsplash
-          </button>
           <button className={tabCls('upload')} onClick={() => setTab('upload')}>
             📁 Upload from device
           </button>
@@ -622,11 +621,15 @@ export function QuestionEditor({
   onChange,
   isSaving,
   onSave,
+  saveError,
+  saveOk,
 }: {
   questions: EstimatorQuestion[];
   onChange: (questions: EstimatorQuestion[]) => void;
   isSaving: boolean;
   onSave: () => void;
+  saveError?: string | null;
+  saveOk?: boolean;
 }) {
   const addQuestion = () => onChange([...questions, newQuestion(questions.length)]);
 
@@ -693,7 +696,16 @@ export function QuestionEditor({
             {isSaving ? 'Saving...' : 'Save questions'}
           </button>
         )}
+        {saveOk && !isSaving && (
+          <span className="text-sm font-medium text-green-600">Saved ✓</span>
+        )}
       </div>
+
+      {saveError && (
+        <p className="mt-3 text-sm text-red-600 whitespace-pre-wrap break-words max-w-2xl">
+          Could not save: {saveError}
+        </p>
+      )}
     </div>
   );
 }

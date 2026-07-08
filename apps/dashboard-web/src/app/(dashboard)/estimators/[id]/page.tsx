@@ -598,10 +598,36 @@ export default function EstimatorDetailPage({ params }: { params: { id: string }
     }
   }, [estimator, localQuestions]);
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveOk, setSaveOk] = useState(false);
+
   const saveQuestionsMutation = useMutation({
-    mutationFn: (questions: EstimatorQuestion[]) =>
-      api.put(`/estimators/${id}/questions`, { questions }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['estimator', id] }),
+    mutationFn: async (questions: EstimatorQuestion[]) => {
+      // Sanitize before sending so the strict server schema doesn't reject the array:
+      // drop blank option slots (the editor seeds a new question with one empty option),
+      // trim labels, and re-number order. api.put returns an error envelope instead of
+      // throwing, so we throw here to drive react-query's onError (previously these
+      // failures were silently swallowed and the edit appeared to "not save").
+      const cleaned = questions.map((q, i) => ({
+        ...q,
+        label: q.label.trim(),
+        order: i,
+        options: q.options?.map((o) => o.trim()).filter((o) => o.length > 0),
+      }));
+      const res = await api.put(`/estimators/${id}/questions`, { questions: cleaned });
+      if (res.error) throw new Error(res.error.message);
+      return res.data;
+    },
+    onSuccess: () => {
+      setSaveError(null);
+      setSaveOk(true);
+      setTimeout(() => setSaveOk(false), 2500);
+      queryClient.invalidateQueries({ queryKey: ['estimator', id] });
+    },
+    onError: (e: Error) => {
+      setSaveOk(false);
+      setSaveError(e.message || 'Failed to save questions.');
+    },
   });
 
   const tabs: { key: Tab; label: string }[] = [
@@ -716,6 +742,8 @@ export default function EstimatorDetailPage({ params }: { params: { id: string }
           onChange={setLocalQuestions}
           isSaving={saveQuestionsMutation.isPending}
           onSave={() => saveQuestionsMutation.mutate(questions)}
+          saveError={saveError}
+          saveOk={saveOk}
         />
       )}
       {activeTab === 'pricing' && <PricingTab estimatorId={id} questions={questions} />}

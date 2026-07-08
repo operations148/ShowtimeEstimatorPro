@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, getCsrfToken } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
@@ -62,6 +62,7 @@ export default function ServiceAreaPage() {
       const res = await fetch(`${API_URL}/service-areas/import`, {
         method: 'POST',
         credentials: 'include',
+        headers: { 'X-CSRF-Token': await getCsrfToken() },
         body: formData,
       });
       const json = await res.json() as { data: { imported: number } | null; error: { message: string } | null };
@@ -78,12 +79,12 @@ export default function ServiceAreaPage() {
 
   // Add single zip
   const addZipMutation = useMutation({
-    mutationFn: (zip: string) => {
+    mutationFn: async (zip: string) => {
       const csv = [...zips, zip].join('\n');
       return fetch(`${API_URL}/service-areas/import`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'text/csv' },
+        headers: { 'Content-Type': 'text/csv', 'X-CSRF-Token': await getCsrfToken() },
         body: 'zip\n' + csv,
       }).then((r) => r.json());
     },
@@ -98,12 +99,12 @@ export default function ServiceAreaPage() {
 
   // Remove single zip
   const removeZipMutation = useMutation({
-    mutationFn: (zip: string) => {
+    mutationFn: async (zip: string) => {
       const updated = zips.filter((z) => z !== zip);
       return fetch(`${API_URL}/service-areas/import`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'text/csv' },
+        headers: { 'Content-Type': 'text/csv', 'X-CSRF-Token': await getCsrfToken() },
         body: updated.length > 0 ? 'zip\n' + updated.join('\n') : 'zip\n',
       }).then((r) => r.json());
     },

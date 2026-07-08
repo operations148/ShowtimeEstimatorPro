@@ -45,6 +45,17 @@ const envSchema = z
     // If omitted the image-search endpoint returns an empty array.
     UNSPLASH_ACCESS_KEY: z.string().optional(),
 
+    // ── Media uploads (object storage) ───────────────────────────────────────
+    // Device photo/logo uploads need durable object storage — the serverless
+    // filesystem is read-only. Point these at a PUBLIC Supabase Storage bucket.
+    // SUPABASE_URL: e.g. https://<project-ref>.supabase.co
+    // SUPABASE_SERVICE_ROLE_KEY: service_role key (server-only secret).
+    // If unset, uploads fall back to the local filesystem in dev and return a
+    // clear "not configured" error in production (instead of a 500 crash).
+    SUPABASE_URL: z.string().optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+    SUPABASE_STORAGE_BUCKET: z.string().default('estimator-media'),
+
     // ── Scheduled jobs ───────────────────────────────────────────────────────
     // Protect the /api/v1/cron/* endpoints when deployed. Optional in dev.
     CRON_SECRET: z.string().optional(),

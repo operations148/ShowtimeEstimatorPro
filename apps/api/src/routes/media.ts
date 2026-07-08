@@ -94,11 +94,62 @@ mediaRoutes.post('/upload', requireAuth, async (c) => {
 
   const ext = file.type.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg';
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const bytes = Buffer.from(await file.arrayBuffer());
+
+  // ── Preferred path: Supabase Storage (works on serverless; durable) ─────────
+  if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+    const bucket = env.SUPABASE_STORAGE_BUCKET;
+    const objectPath = `${auth.tenantId}/${filename}`;
+    const base = env.SUPABASE_URL.replace(/\/$/, '');
+
+    const res = await fetch(`${base}/storage/v1/object/${bucket}/${objectPath}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': file.type,
+        'x-upsert': 'true',
+      },
+      body: bytes,
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      return c.json(
+        {
+          data: null,
+          error: {
+            code: 'UPLOAD_FAILED',
+            message: `Storage upload failed (${res.status}). Ensure the "${bucket}" bucket exists and is public. ${detail.slice(0, 180)}`,
+          },
+        },
+        502,
+      );
+    }
+
+    // Public bucket → stable public URL.
+    const url = `${base}/storage/v1/object/public/${bucket}/${objectPath}`;
+    return c.json({ data: { url }, error: null });
+  }
+
+  // ── Production without storage configured: fail clearly, never a 500 crash ──
+  if (env.NODE_ENV === 'production') {
+    return c.json(
+      {
+        data: null,
+        error: {
+          code: 'STORAGE_NOT_CONFIGURED',
+          message:
+            'Image uploads are not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (public bucket) to enable device uploads.',
+        },
+      },
+      503,
+    );
+  }
+
+  // ── Local dev fallback: write to the local filesystem ───────────────────────
   const dir = join(process.cwd(), 'public', 'uploads', auth.tenantId);
-
   await mkdir(dir, { recursive: true });
-  await writeFile(join(dir, filename), Buffer.from(await file.arrayBuffer()));
-
+  await writeFile(join(dir, filename), bytes);
   const url = `http://localhost:${env.PORT}/uploads/${auth.tenantId}/${filename}`;
   return c.json({ data: { url }, error: null });
 });
