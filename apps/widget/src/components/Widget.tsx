@@ -431,7 +431,6 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
                     {fmtMonthly((result.min + result.max) / 2, result.currency)} / Mo O.A.C
                   </p>
                   <p className="ep-price-fine">6.99% APR / 30 years</p>
-                  <p className="ep-price-note">✓ Check your email for a detailed quote!</p>
                 </>
               ) : (
                 <div className="ep-price-locked" aria-hidden="true">

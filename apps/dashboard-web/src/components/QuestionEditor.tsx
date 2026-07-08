@@ -587,7 +587,7 @@ function QuestionRow({
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
             </svg>
-            Click the image thumbnail to add a photo from Unsplash
+            Click the image thumbnail to add a photo from your device
           </p>
           {(question.options ?? []).map((opt, i) => (
             <OptionRow
