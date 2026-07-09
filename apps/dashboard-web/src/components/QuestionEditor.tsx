@@ -378,7 +378,6 @@ function OptionRow({
 }) {
   // Which image slot the picker is editing (0 or 1); null = closed.
   const [pickerSlot, setPickerSlot] = useState<number | null>(null);
-  const canAddMore = images.length < 2;
 
   const handlePicked = (url: string) => {
     if (pickerSlot === null) return;
@@ -394,30 +393,32 @@ function OptionRow({
   return (
     <>
       <div className="flex gap-2 items-center">
-        {/* Image thumbnails (up to 2) + add slot */}
+        {/* Always show both image slots (up to 2 per answer) so the capacity is clear */}
         <div className="flex gap-1 flex-shrink-0">
-          {images.map((url, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setPickerSlot(i)}
-              className={thumbBtn}
-              title="Change image"
-            >
-              <img src={url} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
-          {canAddMore && (
-            <button
-              type="button"
-              onClick={() => setPickerSlot(images.length)}
-              className={thumbBtn}
-              title={images.length === 0 ? 'Add image' : 'Add 2nd image'}
-            >
-              <svg className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
+          {[0, 1].map((i) =>
+            images[i] ? (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setPickerSlot(i)}
+                className={thumbBtn}
+                title={`Change image ${i + 1}`}
+              >
+                <img src={images[i]} alt="" className="w-full h-full object-cover" />
+              </button>
+            ) : (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setPickerSlot(images.length)}
+                className={thumbBtn}
+                title={i === 0 ? 'Add image' : 'Add 2nd image'}
+              >
+                <svg className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            ),
           )}
         </div>
 
