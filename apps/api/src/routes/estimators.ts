@@ -379,15 +379,17 @@ export function createEstimatorRoutes(
       );
     }
 
-    // The widget bundle is served from the widget origin (CORS_WIDGET_ORIGINS),
-    // but data-api-url must point at THIS API — derive it from the request origin
-    // (works behind Vercel via the x-forwarded-proto/host the bridge sets).
+    // Iframe embed — works reliably on every platform (WordPress, GoHighLevel, Wix,
+    // …) because it isn't affected by page-builder script sandboxing. The estimator
+    // renders full-width inside the iframe (its own shell caps + centers itself).
     const widgetUrl = env.CORS_WIDGET_ORIGINS.split(',')[0] ?? 'http://localhost:5173';
-    const apiUrl = new URL(c.req.url).origin;
     const snippet = [
       `<!-- Estimator Widget: ${est.title} -->`,
-      `<div id="estimator-widget" data-key="${est.publicKey}" data-api-url="${apiUrl}/api/v1"></div>`,
-      `<script src="${widgetUrl}/widget.iife.js"></script>`,
+      `<iframe`,
+      `  src="${widgetUrl}/embed-example.html?key=${est.publicKey}"`,
+      `  style="width:100%; min-height:820px; border:none; border-radius:16px;"`,
+      `  title="${est.title}"`,
+      `  loading="lazy"></iframe>`,
     ].join('\n');
 
     return c.json({ data: { snippet, publicKey: est.publicKey }, error: null });

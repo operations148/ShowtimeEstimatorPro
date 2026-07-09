@@ -786,11 +786,12 @@ const WIDGET_CSS = `
 /* ── Shell / layout ── */
 .ep-shell {
   display: grid;
-  grid-template-columns: minmax(158px, 220px) 1fr;
+  grid-template-columns: minmax(200px, 300px) 1fr;
   grid-template-rows: 1fr auto;
   grid-template-areas: "logo main" "cta main";
-  height: min(680px, 86vh);
-  max-width: 880px;
+  height: min(760px, 90vh);
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
   background: var(--ep-bg);
   border: 1px solid var(--ep-border);
