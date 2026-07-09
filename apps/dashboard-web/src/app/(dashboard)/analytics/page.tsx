@@ -26,7 +26,14 @@ interface DateRange {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function toISODate(d: Date) {
-  return d.toISOString().slice(0, 10);
+  // Use LOCAL date parts, not UTC (toISOString). The range strings are later read
+  // back as local time (new Date(str + 'T23:59:59')), so a UTC date here would push
+  // the window's end into the past for timezones ahead of UTC — silently excluding
+  // submissions made later in the local day.
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function daysAgo(n: number): string {
