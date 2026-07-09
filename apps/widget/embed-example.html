@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Instant Pool Estimate</title>
   <style>
-    html, body { margin: 0; padding: 0; background: #0a1628; }
+    html, body { height: 100%; margin: 0; padding: 0; background: #0a1628; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-    /* Full-width host: the widget's own shell caps + centers itself. */
-    #estimator-widget { width: 100%; padding: 20px 16px; box-sizing: border-box; }
-    @media (max-width: 640px) { #estimator-widget { padding: 12px 8px; } }
+    /* Full-width + full-height host: the widget's own shell caps + centers itself
+       and fills this height, so it fits the iframe without being cut off. */
+    #estimator-widget { width: 100%; height: 100%; padding: 16px; box-sizing: border-box; }
+    @media (max-width: 640px) { #estimator-widget { padding: 8px; } }
   </style>
 </head>
 <body>

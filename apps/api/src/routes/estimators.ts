@@ -387,7 +387,7 @@ export function createEstimatorRoutes(
       `<!-- Estimator Widget: ${est.title} -->`,
       `<iframe`,
       `  src="${widgetUrl}/embed-example.html?key=${est.publicKey}"`,
-      `  style="width:100%; min-height:820px; border:none; border-radius:16px;"`,
+      `  style="width:100%; height:min(880px,90vh); min-height:560px; border:none; border-radius:16px;"`,
       `  title="${est.title}"`,
       `  loading="lazy"></iframe>`,
     ].join('\n');

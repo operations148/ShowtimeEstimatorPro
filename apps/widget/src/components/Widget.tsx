@@ -789,7 +789,11 @@ const WIDGET_CSS = `
   grid-template-columns: minmax(200px, 300px) 1fr;
   grid-template-rows: 1fr auto;
   grid-template-areas: "logo main" "cta main";
-  height: min(760px, 90vh);
+  /* Fill the host container (iframe/page) so the sticky rail + scrollable questions
+     use the full available height. Falls back to a viewport-based height for the
+     legacy inline script embed where the container has no explicit height. */
+  height: 100%;
+  min-height: min(760px, 88vh);
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
@@ -886,7 +890,9 @@ const WIDGET_CSS = `
 .ep-price-locked .ep-lock { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -20%); font-size: 22px; opacity: 0.9; }
 
 /* ── Main column ── */
-.ep-main { grid-area: main; overflow-y: auto; padding: 26px 22px 28px; }
+/* min-height:0 lets this grid item shrink so overflow-y:auto actually scrolls
+   (grid items default to min-height:auto, which would overflow the shell). */
+.ep-main { grid-area: main; overflow-y: auto; min-height: 0; padding: 26px 22px 28px; }
 .ep-main::-webkit-scrollbar { width: 10px; }
 .ep-main::-webkit-scrollbar-thumb { background: #1b2f4d; border-radius: 8px; border: 3px solid var(--ep-bg); }
 .ep-main-title { margin: 0 0 18px; text-align: center; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ep-muted); }
