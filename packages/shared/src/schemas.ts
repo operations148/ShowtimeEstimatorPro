@@ -9,6 +9,9 @@ export const brandingSchema = z.object({
     .regex(/^#[0-9a-fA-F]{6}$/)
     .optional(),
   fontFamily: z.string().max(100).optional(),
+  // Optional booking/scheduling URL (e.g. a GHL calendar). When set, the widget
+  // shows a "Book Your Appointment" CTA after the estimate is revealed.
+  bookingUrl: z.string().url().optional(),
 });
 
 // ── Tenant ──

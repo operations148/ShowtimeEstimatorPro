@@ -74,6 +74,7 @@ export function createWidgetRoutes(db: NodePgDatabase<typeof schema>): Hono {
       logoUrl: estBranding.logoUrl ?? tenantBranding.logoUrl,
       primaryColor: estBranding.primaryColor ?? tenantBranding.primaryColor,
       fontFamily: estBranding.fontFamily ?? tenantBranding.fontFamily,
+      bookingUrl: estBranding.bookingUrl ?? tenantBranding.bookingUrl,
     };
 
     return c.json({

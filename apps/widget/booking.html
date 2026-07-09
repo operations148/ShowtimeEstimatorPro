@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schedule Your On-Site Inspection</title>
+  <style>
+    :root {
+      --bg: #0a1628;
+      --panel: #0f2035;
+      --border: #1e3a5f;
+      --text: #eaf2fb;
+      --muted: #8aa2c0;
+      --accent: #16a34a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background:
+        radial-gradient(1200px 600px at 50% -10%, rgba(22,163,74,0.10), transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, rgba(13,148,136,0.08), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      min-height: 100vh;
+    }
+    .wrap { max-width: 780px; margin: 0 auto; padding: 40px 20px 64px; }
+    .header { text-align: center; margin-bottom: 26px; }
+    h1 {
+      margin: 0 0 18px;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .logo { max-width: 220px; max-height: 96px; width: auto; height: auto; object-fit: contain; display: inline-block; }
+    .sub { margin: 14px auto 0; max-width: 520px; font-size: 15px; line-height: 1.6; color: var(--muted); }
+    .cal-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 8px;
+      box-shadow: 0 30px 70px -30px rgba(3, 12, 26, 0.8);
+      overflow: hidden;
+    }
+    iframe { width: 100%; min-height: 720px; border: none; border-radius: 12px; display: block; background: #fff; }
+    .fallback { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 15px; }
+    .fallback a { color: var(--accent); font-weight: 600; }
+    @media (max-width: 640px) { .wrap { padding: 28px 14px 48px; } iframe { min-height: 640px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>Schedule Your On-Site Inspection</h1>
+      <div id="logo-slot"></div>
+      <p class="sub">Pick a time that works for you and our team will come out to take a look.</p>
+    </div>
+    <div class="cal-card" id="cal-slot">
+      <div class="fallback" id="fallback">Loading the scheduler…</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var cal = params.get('cal') || '';
+      var logo = params.get('logo') || '';
+      var name = params.get('name') || '';
+
+      if (name) { document.title = 'Book with ' + name; }
+
+      // Logo (only render a valid http(s) image URL)
+      if (/^https?:\/\//i.test(logo)) {
+        var img = document.createElement('img');
+        img.className = 'logo';
+        img.src = logo;
+        img.alt = name || 'Logo';
+        document.getElementById('logo-slot').appendChild(img);
+      }
+
+      // Calendar embed — only allow an https URL to avoid mixed-content / abuse.
+      var slot = document.getElementById('cal-slot');
+      var fallback = document.getElementById('fallback');
+      if (/^https:\/\//i.test(cal)) {
+        var iframe = document.createElement('iframe');
+        iframe.src = cal;
+        iframe.setAttribute('scrolling', 'no');
+        iframe.title = 'Booking calendar';
+        slot.innerHTML = '';
+        slot.appendChild(iframe);
+        // GoHighLevel's embed script auto-resizes the iframe to its content.
+        var s = document.createElement('script');
+        s.src = 'https://link.msgsndr.com/js/form_embed.js';
+        s.async = true;
+        document.body.appendChild(s);
+      } else {
+        fallback.innerHTML = cal
+          ? 'Open the scheduler here: <a href="' + cal.replace(/"/g, '') + '" target="_blank" rel="noopener">Book a time</a>'
+          : 'Scheduler is not configured yet.';
+      }
+    })();
+  </script>
+</body>
+</html>

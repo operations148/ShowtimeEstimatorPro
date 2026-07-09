@@ -18,7 +18,7 @@ interface WidgetConfig {
   estimatorId: string;
   publicKey: string;
   title: string;
-  branding: { logoUrl?: string; primaryColor?: string; fontFamily?: string };
+  branding: { logoUrl?: string; primaryColor?: string; fontFamily?: string; bookingUrl?: string };
   questions: Question[];
   tenantName: string;
   serviceAreaBehavior: 'block' | 'warn';
@@ -125,6 +125,31 @@ const PLACEHOLDER_GRADIENTS = [
   'linear-gradient(135deg, #1e3a5f, #2563eb)',
   'linear-gradient(135deg, #064e3b, #059669)',
 ];
+
+// The booking page (booking.html) is served from the same origin as this widget
+// bundle. Find that origin from our own <script> tag so the "Book Your Appointment"
+// CTA works whether the widget is embedded on a customer site or previewed here.
+function widgetOrigin(): string {
+  try {
+    const scripts = Array.from(document.getElementsByTagName('script'));
+    const self = scripts.find((s) => s.src && s.src.includes('widget.iife'));
+    if (self) return new URL(self.src).origin;
+  } catch {
+    /* fall through */
+  }
+  return typeof window !== 'undefined' ? window.location.origin : '';
+}
+
+function bookingPageUrl(cfg: WidgetConfig): string | null {
+  const cal = cfg.branding.bookingUrl;
+  if (!cal) return null;
+  const params = new URLSearchParams({
+    cal,
+    name: cfg.tenantName || cfg.title || '',
+  });
+  if (cfg.branding.logoUrl) params.set('logo', cfg.branding.logoUrl);
+  return `${widgetOrigin()}/booking.html?${params.toString()}`;
+}
 
 // Normalize an option's images (single URL, array, or hardcoded fallback) to a
 // list of at most 2 URLs.
@@ -296,6 +321,15 @@ function OptionsGrid({
 export function Widget({ publicKey, apiUrl }: WidgetProps) {
   const api = useRef(createWidgetApi(apiUrl));
   const sessionId = useRef(`ws_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+  // Per-step funnel tracking — fire each step_view/step_complete at most once so
+  // the dashboard's "Drop-off Per Step" table can aggregate views vs completions.
+  const trackedSteps = useRef({ viewed: new Set<string>(), completed: new Set<string>() });
+
+  const trackStepView = (cfg: WidgetConfig, stepId: string) => {
+    if (trackedSteps.current.viewed.has(stepId)) return;
+    trackedSteps.current.viewed.add(stepId);
+    api.current.trackEvent({ estimatorId: cfg.estimatorId, eventType: 'step_view', stepId, sessionId: sessionId.current });
+  };
 
   const [step, setStep] = useState<WidgetStep>('loading');
   const [config, setConfig] = useState<WidgetConfig | null>(null);
@@ -324,12 +358,7 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
           if (first.type === 'single' && first.options && first.options[0]) {
             setAnswers((prev) => ({ ...prev, [first.id]: first.options![0] }));
           }
-          api.current.trackEvent({
-            estimatorId: cfg.estimatorId,
-            eventType: 'step_view',
-            stepId: first.id,
-            sessionId: sessionId.current,
-          });
+          trackStepView(cfg, first.id);
         }
       })
       .catch((err: Error) => {
@@ -341,6 +370,28 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
   const handleAnswer = useCallback((questionId: string, value: unknown) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   }, []);
+
+  // Emit step_complete once per question the moment it has a non-empty answer.
+  useEffect(() => {
+    if (!config) return;
+    for (const q of config.questions) {
+      const a = answers[q.id];
+      const answered = Array.isArray(a)
+        ? a.length > 0
+        : typeof a === 'string'
+          ? a.trim() !== ''
+          : a != null;
+      if (answered && !trackedSteps.current.completed.has(q.id)) {
+        trackedSteps.current.completed.add(q.id);
+        api.current.trackEvent({
+          estimatorId: config.estimatorId,
+          eventType: 'step_complete',
+          stepId: q.id,
+          sessionId: sessionId.current,
+        });
+      }
+    }
+  }, [answers, config]);
 
   const validateLead = () => {
     const errs: LeadErrors = {};
@@ -476,6 +527,7 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
     const leadValid =
       lead.name.trim().length > 0 && isValidPhone(lead.phone) && isValidEmail(lead.email);
     const logoUrl = config.branding.logoUrl;
+    const bookingHref = bookingPageUrl(config);
 
     return (
       <div className="ep-root" style={rootStyle}>
@@ -523,6 +575,17 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
                 </div>
               )}
             </div>
+
+            {isRevealed && bookingHref && (
+              <a
+                className="ep-book"
+                href={bookingHref}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Book Your Appointment
+              </a>
+            )}
           </div>
 
           {/* ── Right column: questions + lead form ── */}
@@ -546,6 +609,7 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
                       onPick={(id, opt) => {
                         // Opening a collapsed question expands it AND applies the pick.
                         setActiveQuestionId(id);
+                        trackStepView(config, id);
                         handleAnswer(
                           id,
                           q.type === 'multiple'
@@ -807,6 +871,18 @@ const WIDGET_CSS = `
 .ep-price-mo { margin: 0; font-size: 13px; color: var(--ep-muted); }
 .ep-price-fine { margin: 2px 0 0; font-size: 10px; color: #64748b; }
 .ep-price-note { margin: 12px 0 0; font-size: 12px; font-weight: 500; color: var(--ep-brand); }
+.ep-book {
+  display: block; width: 100%; max-width: 220px; margin: 14px auto 0;
+  padding: 13px 18px; border-radius: 12px; box-sizing: border-box;
+  text-align: center; text-decoration: none;
+  font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
+  background: linear-gradient(135deg, #16a34a, #0d9488);
+  box-shadow: 0 10px 24px -10px #16a34a;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s;
+}
+.ep-book:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -10px #16a34a; }
+.ep-book:active { transform: translateY(0) scale(0.98); }
+.ep-book:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .ep-blur { filter: blur(7px); user-select: none; }
 .ep-price-locked .ep-lock { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -20%); font-size: 22px; opacity: 0.9; }
 

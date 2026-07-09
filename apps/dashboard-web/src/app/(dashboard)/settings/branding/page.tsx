@@ -11,7 +11,7 @@ interface TenantWithBranding {
   id: string;
   name: string;
   slug: string;
-  branding?: { logoUrl?: string; primaryColor?: string; fontFamily?: string } | null;
+  branding?: { logoUrl?: string; primaryColor?: string; fontFamily?: string; bookingUrl?: string } | null;
 }
 
 const FONT_OPTIONS = [
@@ -104,6 +104,7 @@ export default function BrandingPage() {
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#2563eb');
   const [fontFamily, setFontFamily] = useState('');
+  const [bookingUrl, setBookingUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -123,6 +124,7 @@ export default function BrandingPage() {
     setLogoUrl(tenant.branding?.logoUrl ?? '');
     setPrimaryColor(tenant.branding?.primaryColor ?? '#2563eb');
     setFontFamily(tenant.branding?.fontFamily ?? '');
+    setBookingUrl(tenant.branding?.bookingUrl ?? '');
   }, [tenant]);
 
   // Upload the logo to the server (returns a hosted URL) rather than embedding base64.
@@ -164,6 +166,8 @@ export default function BrandingPage() {
   };
 
   const isValidHex = /^#[0-9a-fA-F]{6}$/.test(primaryColor);
+  const bookingTrimmed = bookingUrl.trim();
+  const isValidBooking = bookingTrimmed === '' || /^https?:\/\/.+/i.test(bookingTrimmed);
 
   const saveMutation = useMutation({
     mutationFn: () => {
@@ -171,6 +175,7 @@ export default function BrandingPage() {
       if (logoUrl) branding.logoUrl = logoUrl;
       if (isValidHex) branding.primaryColor = primaryColor;
       if (fontFamily) branding.fontFamily = fontFamily;
+      if (bookingTrimmed) branding.bookingUrl = bookingTrimmed;
       return api.patch('/tenants/me', { branding });
     },
     onSuccess: async (res) => {
@@ -273,10 +278,30 @@ export default function BrandingPage() {
             </select>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Booking calendar URL</label>
+            <input
+              type="url"
+              value={bookingUrl}
+              onChange={(e) => setBookingUrl(e.target.value)}
+              placeholder="https://app.yourcrm.com/widget/booking/…"
+              className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+                isValidBooking ? 'border-gray-300' : 'border-red-400'
+              }`}
+            />
+            <p className="text-xs text-gray-400 mt-1.5">
+              Optional. Paste your GoHighLevel (or other) calendar link. When set, the widget shows a
+              &ldquo;Book Your Appointment&rdquo; button after the estimate, opening a branded scheduling page.
+            </p>
+            {!isValidBooking && (
+              <p className="text-xs text-red-500 mt-1">Enter a full URL starting with https://</p>
+            )}
+          </div>
+
           <button
             type="button"
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || uploading}
+            disabled={saveMutation.isPending || uploading || !isValidBooking}
             className="px-4 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition-colors disabled:opacity-60"
           >
             {saveMutation.isPending ? 'Saving…' : 'Save branding'}

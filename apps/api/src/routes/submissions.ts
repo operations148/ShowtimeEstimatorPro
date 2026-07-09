@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { eq, and, desc } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { estimators, submissions, tenants } from '../models/schema';
+import { estimators, estimatorVersions, submissions, tenants } from '../models/schema';
 import type * as schema from '../models/schema';
 import { createSubmissionSchema } from '@repo/shared';
 import type { PricingInput } from '@repo/shared';
@@ -207,6 +207,25 @@ export function createSubmissionRoutes(
     // Dispatch to CRM integrations (awaited — see comment above). Gated on the
     // tenant's integration config — independent of notificationRecipients.
     if (tenant?.integrations) {
+      // Map raw answers (questionId -> value) to readable (questionLabel -> value)
+      // so the CRM/webhook payload is directly usable for field mapping in GHL etc.
+      let readableAnswers: Record<string, unknown> = parsed.data.answers;
+      if (est.currentVersionId) {
+        const [ver] = await db
+          .select({ questions: estimatorVersions.questions })
+          .from(estimatorVersions)
+          .where(eq(estimatorVersions.id, est.currentVersionId))
+          .limit(1);
+        const qs = (ver?.questions ?? []) as Array<{ id: string; label: string }>;
+        const labelById = new Map(qs.map((q) => [q.id, q.label]));
+        readableAnswers = Object.fromEntries(
+          Object.entries(parsed.data.answers as Record<string, unknown>).map(([qid, val]) => [
+            labelById.get(qid) ?? qid,
+            Array.isArray(val) ? val.join(', ') : val,
+          ]),
+        );
+      }
+
       await integrationDispatch
         .dispatchNewLead(tenant.integrations, {
           submissionId: submission!.id,
@@ -218,7 +237,7 @@ export function createSubmissionRoutes(
           estimateMin: estimate.min,
           estimateMax: estimate.max,
           currency: estimate.currency,
-          answers: parsed.data.answers,
+          answers: readableAnswers,
           submittedAt: new Date(),
         })
         .catch((e) => logger.error({ err: e }, 'IntegrationDispatchService: failed to dispatch lead'));
