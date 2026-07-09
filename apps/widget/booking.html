@@ -64,41 +64,56 @@
   <script>
     (function () {
       var params = new URLSearchParams(window.location.search);
-      var cal = params.get('cal') || '';
-      var logo = params.get('logo') || '';
-      var name = params.get('name') || '';
-
-      if (name) { document.title = 'Book with ' + name; }
-
-      // Logo (only render a valid http(s) image URL)
-      if (/^https?:\/\//i.test(logo)) {
-        var img = document.createElement('img');
-        img.className = 'logo';
-        img.src = logo;
-        img.alt = name || 'Logo';
-        document.getElementById('logo-slot').appendChild(img);
-      }
-
-      // Calendar embed — only allow an https URL to avoid mixed-content / abuse.
-      var slot = document.getElementById('cal-slot');
+      var key = params.get('key') || '';
+      var api = params.get('api') || '';
       var fallback = document.getElementById('fallback');
-      if (/^https:\/\//i.test(cal)) {
-        var iframe = document.createElement('iframe');
-        iframe.src = cal;
-        iframe.setAttribute('scrolling', 'no');
-        iframe.title = 'Booking calendar';
-        slot.innerHTML = '';
-        slot.appendChild(iframe);
-        // GoHighLevel's embed script auto-resizes the iframe to its content.
-        var s = document.createElement('script');
-        s.src = 'https://link.msgsndr.com/js/form_embed.js';
-        s.async = true;
-        document.body.appendChild(s);
-      } else {
-        fallback.innerHTML = cal
-          ? 'Open the scheduler here: <a href="' + cal.replace(/"/g, '') + '" target="_blank" rel="noopener">Book a time</a>'
-          : 'Scheduler is not configured yet.';
+
+      function render(name, logo, cal) {
+        if (name) { document.title = 'Book with ' + name; }
+
+        // Logo — accept a normal http(s) URL or a base64 data: URI.
+        if (/^(https?:\/\/|data:image\/)/i.test(logo)) {
+          var img = document.createElement('img');
+          img.className = 'logo';
+          img.src = logo;
+          img.alt = name || 'Logo';
+          document.getElementById('logo-slot').appendChild(img);
+        }
+
+        var slot = document.getElementById('cal-slot');
+        if (/^https:\/\//i.test(cal)) {
+          var iframe = document.createElement('iframe');
+          iframe.src = cal;
+          iframe.setAttribute('scrolling', 'no');
+          iframe.title = 'Booking calendar';
+          slot.innerHTML = '';
+          slot.appendChild(iframe);
+          // GoHighLevel's embed script auto-resizes the iframe to its content.
+          var s = document.createElement('script');
+          s.src = 'https://link.msgsndr.com/js/form_embed.js';
+          s.async = true;
+          document.body.appendChild(s);
+        } else {
+          fallback.innerHTML = 'Scheduling isn’t set up yet.';
+        }
       }
+
+      if (!key || !/^https?:\/\//i.test(api)) {
+        fallback.innerHTML = 'This scheduling link is missing information.';
+        return;
+      }
+
+      // Fetch the estimator config to get the tenant's calendar URL, logo, and name.
+      fetch(api.replace(/\/$/, '') + '/widget/' + encodeURIComponent(key))
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          var d = (j && j.data) || {};
+          var b = d.branding || {};
+          render(d.tenantName || d.title || '', b.logoUrl || '', b.bookingUrl || '');
+        })
+        .catch(function () {
+          fallback.innerHTML = 'Could not load the scheduler. Please try again.';
+        });
     })();
   </script>
 </body>

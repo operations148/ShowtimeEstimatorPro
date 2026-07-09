@@ -19,14 +19,24 @@ function fmtDate(dateStr: string) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
+// Local date (YYYY-MM-DD), not UTC — the range strings are read back as local time,
+// so a UTC date would push the window's end into the past for timezones ahead of UTC
+// and silently drop same-day submissions.
+function toLocalISODate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function daysAgo(n: number): string {
   const d = new Date();
   d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  return toLocalISODate(d);
 }
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  return toLocalISODate(new Date());
 }
 
 // ── Tooltip components ────────────────────────────────────────────────────────

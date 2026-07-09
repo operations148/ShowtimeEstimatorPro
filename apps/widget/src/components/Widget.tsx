@@ -140,14 +140,12 @@ function widgetOrigin(): string {
   return typeof window !== 'undefined' ? window.location.origin : '';
 }
 
-function bookingPageUrl(cfg: WidgetConfig): string | null {
-  const cal = cfg.branding.bookingUrl;
-  if (!cal) return null;
-  const params = new URLSearchParams({
-    cal,
-    name: cfg.tenantName || cfg.title || '',
-  });
-  if (cfg.branding.logoUrl) params.set('logo', cfg.branding.logoUrl);
+// Build a SHORT booking-page URL. We pass only the estimator's public key + the
+// API base; the booking page fetches the calendar/logo/name itself. (Passing the
+// logo inline can overflow the URL length when it's a base64 data URI.)
+function bookingPageUrl(cfg: WidgetConfig, apiUrl: string): string | null {
+  if (!cfg.branding.bookingUrl) return null;
+  const params = new URLSearchParams({ key: cfg.publicKey, api: apiUrl });
   return `${widgetOrigin()}/booking.html?${params.toString()}`;
 }
 
@@ -527,7 +525,7 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
     const leadValid =
       lead.name.trim().length > 0 && isValidPhone(lead.phone) && isValidEmail(lead.email);
     const logoUrl = config.branding.logoUrl;
-    const bookingHref = bookingPageUrl(config);
+    const bookingHref = bookingPageUrl(config, apiUrl);
 
     return (
       <div className="ep-root" style={rootStyle}>
