@@ -98,12 +98,12 @@ function ImagePicker({
 
   // File select handler
   const handleFile = (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Please select an image file.');
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setUploadError('Please use a PNG, JPEG, or WebP image.');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError('File must be under 5 MB.');
+    if (file.size > 6 * 1024 * 1024) {
+      setUploadError('Image must be under 6 MB.');
       return;
     }
     setUploadError(null);
@@ -310,7 +310,7 @@ function ImagePicker({
                       d="M4 16l4-4m0 0l4 4m-4-4v9M4 8a4 4 0 014-4h8a4 4 0 014 4v1" />
                   </svg>
                   <p className="text-sm text-gray-500">Click to select or drag & drop an image</p>
-                  <p className="text-xs text-gray-400">JPEG, PNG, WebP, GIF — max 5 MB</p>
+                  <p className="text-xs text-gray-400">PNG or JPEG — WebP preferred. Max 6&nbsp;MB.</p>
                 </>
               )}
             </div>
@@ -318,7 +318,7 @@ function ImagePicker({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp"
               className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
             />
@@ -361,41 +361,65 @@ async function getCsrfTokenForUpload(): Promise<string> {
 
 function OptionRow({
   optionLabel,
-  imageUrl,
+  images,
   index,
   totalOptions,
   onLabelChange,
-  onImageSelect,
+  onImagesChange,
   onRemove,
 }: {
   optionLabel: string;
-  imageUrl?: string;
+  images: string[];
   index: number;
   totalOptions: number;
   onLabelChange: (val: string) => void;
-  onImageSelect: (url: string) => void;
+  onImagesChange: (urls: string[]) => void;
   onRemove: () => void;
 }) {
-  const [pickerOpen, setPickerOpen] = useState(false);
+  // Which image slot the picker is editing (0 or 1); null = closed.
+  const [pickerSlot, setPickerSlot] = useState<number | null>(null);
+  const canAddMore = images.length < 2;
+
+  const handlePicked = (url: string) => {
+    if (pickerSlot === null) return;
+    const next = [...images];
+    if (url) next[pickerSlot] = url;
+    else next.splice(pickerSlot, 1); // "Remove" from the picker clears that slot
+    onImagesChange(next.filter(Boolean));
+    setPickerSlot(null);
+  };
+
+  const thumbBtn = 'flex-shrink-0 w-10 h-7 rounded border-2 border-dashed border-gray-200 hover:border-brand-400 transition-colors overflow-hidden flex items-center justify-center bg-gray-50 group';
 
   return (
     <>
       <div className="flex gap-2 items-center">
-        {/* Image thumbnail / picker trigger */}
-        <button
-          type="button"
-          onClick={() => setPickerOpen(true)}
-          className="flex-shrink-0 w-10 h-7 rounded border-2 border-dashed border-gray-200 hover:border-brand-400 transition-colors overflow-hidden flex items-center justify-center bg-gray-50 group"
-          title={imageUrl ? 'Change image' : 'Add image'}
-        >
-          {imageUrl ? (
-            <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <svg className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+        {/* Image thumbnails (up to 2) + add slot */}
+        <div className="flex gap-1 flex-shrink-0">
+          {images.map((url, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setPickerSlot(i)}
+              className={thumbBtn}
+              title="Change image"
+            >
+              <img src={url} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))}
+          {canAddMore && (
+            <button
+              type="button"
+              onClick={() => setPickerSlot(images.length)}
+              className={thumbBtn}
+              title={images.length === 0 ? 'Add image' : 'Add 2nd image'}
+            >
+              <svg className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
           )}
-        </button>
+        </div>
 
         <input
           type="text"
@@ -419,16 +443,16 @@ function OptionRow({
         )}
       </div>
 
-      {pickerOpen && optionLabel.trim() && (
+      {pickerSlot !== null && optionLabel.trim() && (
         <ImagePicker
           optionLabel={optionLabel}
-          currentImageUrl={imageUrl}
-          onSelect={onImageSelect}
-          onClose={() => setPickerOpen(false)}
+          currentImageUrl={pickerSlot < images.length ? images[pickerSlot] : undefined}
+          onSelect={handlePicked}
+          onClose={() => setPickerSlot(null)}
         />
       )}
 
-      {pickerOpen && !optionLabel.trim() && (
+      {pickerSlot !== null && !optionLabel.trim() && (
         <div className="ml-12 text-xs text-amber-600">Type an option label first, then add an image.</div>
       )}
     </>
@@ -472,13 +496,20 @@ function QuestionRow({
     onUpdate({ ...question, options, optionImages });
   };
 
-  const setOptionImage = (optionLabel: string, url: string) => {
+  const getOptionImages = (optionLabel: string): string[] => {
+    const v = question.optionImages?.[optionLabel];
+    if (Array.isArray(v)) return v.filter(Boolean).slice(0, 2);
+    if (typeof v === 'string' && v) return [v];
+    return [];
+  };
+
+  const setOptionImages = (optionLabel: string, urls: string[]) => {
     const optionImages = { ...(question.optionImages ?? {}) };
-    if (url) {
-      optionImages[optionLabel] = url;
-    } else {
-      delete optionImages[optionLabel];
-    }
+    const clean = urls.filter(Boolean).slice(0, 2);
+    // Store 1 image as a string (legacy shape), 2 as an array, 0 → remove key.
+    if (clean.length === 0) delete optionImages[optionLabel];
+    else if (clean.length === 1) optionImages[optionLabel] = clean[0]!;
+    else optionImages[optionLabel] = clean;
     onUpdate({ ...question, optionImages });
   };
 
@@ -593,11 +624,11 @@ function QuestionRow({
             <OptionRow
               key={i}
               optionLabel={opt}
-              imageUrl={question.optionImages?.[opt]}
+              images={getOptionImages(opt)}
               index={i}
               totalOptions={(question.options ?? []).length}
               onLabelChange={(val) => updateOptionLabel(i, val)}
-              onImageSelect={(url) => setOptionImage(opt, url)}
+              onImagesChange={(urls) => setOptionImages(opt, urls)}
               onRemove={() => removeOption(i)}
             />
           ))}

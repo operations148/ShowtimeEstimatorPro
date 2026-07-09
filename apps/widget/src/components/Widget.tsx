@@ -9,7 +9,7 @@ interface Question {
   type: 'single' | 'multiple' | 'text' | 'number';
   label: string;
   options?: string[];
-  optionImages?: Record<string, string>;
+  optionImages?: Record<string, string | string[]>;
   required: boolean;
   order: number;
 }
@@ -126,42 +126,115 @@ const PLACEHOLDER_GRADIENTS = [
   'linear-gradient(135deg, #064e3b, #059669)',
 ];
 
-// ── Image card (with image) ───────────────────────────────────────────────────
+// Normalize an option's images (single URL, array, or hardcoded fallback) to a
+// list of at most 2 URLs.
+function imageList(
+  optionImages: Record<string, string | string[]> | undefined,
+  opt: string,
+): string[] {
+  const v = optionImages?.[opt];
+  let urls: string[];
+  if (Array.isArray(v)) urls = v;
+  else if (typeof v === 'string' && v) urls = [v];
+  else urls = OPTION_IMAGES[opt] ? [OPTION_IMAGES[opt] as string] : [];
+  return urls.filter(Boolean).slice(0, 2);
+}
+
+// ── Image card (with optional 2-image carousel) ───────────────────────────────
 
 function ImageCard({
   label,
-  imgUrl,
+  imgUrls,
   selected,
   onClick,
   placeholderIndex,
 }: {
   label: string;
-  imgUrl?: string;
+  imgUrls: string[];
   selected: boolean;
   onClick: () => void;
   placeholderIndex?: number;
 }) {
   const placeholder = PLACEHOLDER_GRADIENTS[(placeholderIndex ?? 0) % PLACEHOLDER_GRADIENTS.length];
-  // Reveal the photo only once this specific card is selected — before that,
-  // every option shows the same plain placeholder so nothing "spoils" upfront.
-  const showImage = !!imgUrl && selected;
+  const [idx, setIdx] = useState(0);
+  const hasImages = imgUrls.length > 0;
+  const multi = imgUrls.length > 1;
+  const current = imgUrls[Math.min(idx, imgUrls.length - 1)];
+
+  const step = (e: React.MouseEvent, dir: 1 | -1) => {
+    e.stopPropagation(); // don't toggle selection when using the arrows
+    setIdx((i) => (i + dir + imgUrls.length) % imgUrls.length);
+  };
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       aria-pressed={selected}
       className={`ep-card${selected ? ' ep-card--selected' : ''}`}
-      style={{ background: showImage ? '#0f2035' : placeholder }}
+      style={{ background: hasImages ? '#0f2035' : placeholder }}
     >
-      {showImage ? (
-        <img className="ep-card-img" src={imgUrl} alt={label} loading="lazy" />
+      {hasImages ? (
+        <img className="ep-card-img" src={current} alt={label} loading="lazy" />
       ) : (
         <span className="ep-card-ph" style={{ background: placeholder }} />
       )}
       <span className="ep-card-label">{label}</span>
-      {showImage && <span className="ep-card-scrim" />}
-    </button>
+      {hasImages && <span className="ep-card-scrim" />}
+
+      {multi && (
+        <>
+          <button type="button" className="ep-caro ep-caro--prev" onClick={(e) => step(e, -1)} aria-label="Previous image">‹</button>
+          <button type="button" className="ep-caro ep-caro--next" onClick={(e) => step(e, 1)} aria-label="Next image">›</button>
+          <span className="ep-caro-dots" aria-hidden="true">
+            {imgUrls.map((_, i) => (
+              <span key={i} className={`ep-caro-dot${i === Math.min(idx, imgUrls.length - 1) ? ' ep-caro-dot--on' : ''}`} />
+            ))}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Collapsed question: compact text pills ─────────────────────────────────────
+
+function OptionsPills({
+  question,
+  answers,
+  onPick,
+}: {
+  question: Question;
+  answers: Record<string, unknown>;
+  onPick: (id: string, opt: string) => void;
+}) {
+  const { id, type, options } = question;
+  if (!options || options.length === 0) return null;
+  const answer = answers[id];
+  const selectedArr: string[] = type === 'multiple' && Array.isArray(answer) ? (answer as string[]) : [];
+  const selectedSingle = type !== 'multiple' && typeof answer === 'string' ? answer : '';
+  const isSel = (opt: string) => (type === 'multiple' ? selectedArr.includes(opt) : selectedSingle === opt);
+
+  return (
+    <div className="ep-pills">
+      {options.map((opt) => (
+        <button
+          key={opt}
+          type="button"
+          className={`ep-pill${isSel(opt) ? ' ep-pill--selected' : ''}`}
+          onClick={() => onPick(id, opt)}
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -208,7 +281,7 @@ function OptionsGrid({
         <ImageCard
           key={opt}
           label={opt}
-          imgUrl={optionImages?.[opt] ?? OPTION_IMAGES[opt]}
+          imgUrls={imageList(optionImages, opt)}
           selected={isSelected(opt)}
           onClick={() => handleClick(opt)}
           placeholderIndex={i}
@@ -233,6 +306,9 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
   const [result, setResult] = useState<EstimateResult | null>(null);
   const [error, setError] = useState('');
   const [areaWarning, setAreaWarning] = useState(false);
+  // Accordion: only one question is "expanded" (image cards) at a time; the rest
+  // render as compact text pills. Null until config loads.
+  const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
 
   // Load config
   useEffect(() => {
@@ -241,11 +317,17 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
       .then((cfg) => {
         setConfig(cfg);
         setStep('form');
-        if (cfg.questions[0]) {
+        // Open the first question and pre-select its first answer (single-choice).
+        const first = cfg.questions[0];
+        if (first) {
+          setActiveQuestionId(first.id);
+          if (first.type === 'single' && first.options && first.options[0]) {
+            setAnswers((prev) => ({ ...prev, [first.id]: first.options![0] }));
+          }
           api.current.trackEvent({
             estimatorId: cfg.estimatorId,
             eventType: 'step_view',
-            stepId: cfg.questions[0].id,
+            stepId: first.id,
             sessionId: sessionId.current,
           });
         }
@@ -455,7 +537,26 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
                 </p>
 
                 {(q.type === 'single' || q.type === 'multiple') && q.options ? (
-                  <OptionsGrid question={q} answers={answers} onAnswer={handleAnswer} />
+                  q.id === activeQuestionId ? (
+                    <OptionsGrid question={q} answers={answers} onAnswer={handleAnswer} />
+                  ) : (
+                    <OptionsPills
+                      question={q}
+                      answers={answers}
+                      onPick={(id, opt) => {
+                        // Opening a collapsed question expands it AND applies the pick.
+                        setActiveQuestionId(id);
+                        handleAnswer(
+                          id,
+                          q.type === 'multiple'
+                            ? (Array.isArray(answers[id]) ? (answers[id] as string[]) : []).includes(opt)
+                              ? (answers[id] as string[]).filter((v) => v !== opt)
+                              : [...((answers[id] as string[]) ?? []), opt]
+                            : opt,
+                        );
+                      }}
+                    />
+                  )
                 ) : q.type === 'text' || q.type === 'number' ? (
                   <input
                     className="ep-input"
@@ -743,6 +844,35 @@ const WIDGET_CSS = `
 }
 .ep-card--selected .ep-card-label { background: var(--ep-brand); }
 .ep-card-scrim { position: absolute; bottom: 0; left: 0; right: 0; height: 42%; background: linear-gradient(to top, rgba(0,0,0,0.5), transparent); pointer-events: none; }
+
+/* ── 2-image carousel arrows ── */
+.ep-caro {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1; font-weight: 700;
+  color: #fff; background: rgba(0,0,0,0.5);
+  transition: background 0.15s, transform 0.15s;
+}
+.ep-caro:hover { background: rgba(0,0,0,0.75); }
+.ep-caro--prev { left: 6px; }
+.ep-caro--next { right: 6px; }
+.ep-caro-dots { position: absolute; bottom: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; pointer-events: none; }
+.ep-caro-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+.ep-caro-dot--on { background: #fff; }
+
+/* ── Collapsed question: text pills ── */
+.ep-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.ep-pill {
+  padding: 10px 18px; border-radius: 12px;
+  border: 1px solid var(--ep-border); background: var(--ep-surface);
+  color: var(--ep-text); font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.ep-pill:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--ep-brand) 50%, transparent); }
+.ep-pill:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ep-brand) 35%, transparent); }
+.ep-pill--selected { border-color: var(--ep-brand); background: var(--ep-brand); color: #fff; }
 
 /* ── Inputs / lead form ── */
 .ep-divider { height: 1px; background: var(--ep-border); margin: 6px 0 22px; }

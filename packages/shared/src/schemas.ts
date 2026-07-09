@@ -89,7 +89,10 @@ export const questionSchema = z.object({
   type: z.enum(['single', 'multiple', 'text', 'number']),
   label: z.string().min(1).max(500),
   options: z.array(z.string()).optional(),
-  optionImages: z.record(z.string()).optional(),
+  // Per option: a single image URL (legacy) OR up to 2 image URLs for a carousel.
+  optionImages: z
+    .record(z.union([z.string(), z.array(z.string()).max(2)]))
+    .optional(),
   required: z.boolean().default(true),
   order: z.number().int().min(0),
 });

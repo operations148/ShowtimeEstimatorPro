@@ -83,7 +83,8 @@ export interface EstimatorQuestion {
   type: 'single' | 'multiple' | 'text' | 'number';
   label: string;
   options?: string[];
-  optionImages?: Record<string, string>; // option label → image URL
+  // option label → a single image URL (legacy) or up to 2 URLs for a carousel
+  optionImages?: Record<string, string | string[]>;
   required: boolean;
   order: number;
 }

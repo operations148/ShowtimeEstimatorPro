@@ -57,8 +57,8 @@ mediaRoutes.get('/image-search', requireAuth, async (c) => {
 // Accepts multipart/form-data with a `file` field.
 // Saves to public/uploads/{tenantId}/ and returns the accessible URL.
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
-const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_BYTES = 6 * 1024 * 1024; // 6 MB
 
 mediaRoutes.post('/upload', requireAuth, async (c) => {
   const auth = c.get('auth');
@@ -80,14 +80,14 @@ mediaRoutes.post('/upload', requireAuth, async (c) => {
 
   if (!ALLOWED_TYPES.includes(file.type)) {
     return c.json(
-      { data: null, error: { code: 'INVALID_FILE', message: 'Only JPEG, PNG, WebP, GIF, and AVIF are allowed' } },
+      { data: null, error: { code: 'INVALID_FILE', message: 'Only PNG, JPEG, or WebP images are allowed' } },
       400,
     );
   }
 
   if (file.size > MAX_BYTES) {
     return c.json(
-      { data: null, error: { code: 'FILE_TOO_LARGE', message: 'File must be under 5 MB' } },
+      { data: null, error: { code: 'FILE_TOO_LARGE', message: 'Image must be under 6 MB' } },
       400,
     );
   }

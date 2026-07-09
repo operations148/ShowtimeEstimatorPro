@@ -129,6 +129,16 @@ export default function BrandingPage() {
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      showToast('Please use a PNG, JPEG, or WebP image.', 'error');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    if (file.size > 6 * 1024 * 1024) {
+      showToast('Image must be under 6 MB.', 'error');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
     setUploading(true);
     try {
       const formData = new FormData();
@@ -194,7 +204,7 @@ export default function BrandingPage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp"
               onChange={handleLogoUpload}
               className="hidden"
             />
@@ -224,6 +234,7 @@ export default function BrandingPage() {
                 </button>
               )}
             </div>
+            <p className="text-xs text-gray-400 mt-1.5">PNG or JPEG — WebP preferred. Max 6&nbsp;MB.</p>
           </div>
 
           <div>
