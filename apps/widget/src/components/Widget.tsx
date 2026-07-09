@@ -787,13 +787,16 @@ const WIDGET_CSS = `
 .ep-shell {
   display: grid;
   grid-template-columns: minmax(200px, 300px) 1fr;
-  grid-template-rows: 1fr auto;
+  /* Split the brand rail 50/50 — logo centered in the top half, the Reveal CTA +
+     price card centered in the bottom half — so the price isn't cramped at the
+     very bottom edge. */
+  grid-template-rows: 1fr 1fr;
   grid-template-areas: "logo main" "cta main";
-  /* Fill the host container (iframe/page) so the sticky rail + scrollable questions
-     use the full available height. Falls back to a viewport-based height for the
-     legacy inline script embed where the container has no explicit height. */
+  /* Fill the host container (the iframe, which is given a fixed one-page height by
+     the embed snippet) so the rail + questions form a single-page box with the
+     questions column scrolling internally. */
   height: 100%;
-  min-height: min(760px, 88vh);
+  min-height: 480px;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
@@ -831,8 +834,9 @@ const WIDGET_CSS = `
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 16px;
-  padding: 8px 20px 32px;
+  padding: 16px 20px;
 }
 .ep-logo-img { max-width: 100%; max-height: 74px; object-fit: contain; display: block; }
 
