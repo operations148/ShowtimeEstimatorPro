@@ -5,7 +5,6 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { estimators, estimatorVersions, tenants } from '../models/schema';
 import type * as schema from '../models/schema';
 import { db as realDb } from '../models/db';
-import { env } from '../env';
 
 // Default lead field configuration — which fields the widget collects from the end-user.
 // Name, phone, and email are required; zip is optional and only used for
@@ -99,14 +98,14 @@ export function createWidgetRoutes(db: NodePgDatabase<typeof schema>): Hono {
 // Widget routes are public and embedded on third-party sites, so they get a
 // separate permissive CORS policy (no credentials, accepts all configured origins).
 
-const widgetCorsOrigins = env.CORS_WIDGET_ORIGINS.split(',').map((o) => o.trim());
-
 export const widgetRoutes = new Hono();
 
+// The widget config is fetched from arbitrary customer sites where the widget is
+// embedded, so allow any origin (public, read-only, no credentials).
 widgetRoutes.use(
   '*',
   cors({
-    origin: widgetCorsOrigins,
+    origin: '*',
     credentials: false,
     allowMethods: ['GET', 'OPTIONS'],
     allowHeaders: ['Content-Type'],

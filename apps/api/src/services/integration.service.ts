@@ -21,27 +21,34 @@ export interface LeadDispatchPayload {
 
 const REQUEST_TIMEOUT_MS = 8000;
 
+/** Per-target dispatch outcome, surfaced by the "Send test lead" diagnostic. */
+export interface DispatchResult {
+  target: 'ghl' | 'sheetsWebhook' | 'googleSheets';
+  ok: boolean;
+  detail: string;
+}
+
 /**
  * Dispatches new leads to a tenant's configured CRM integrations.
  *
- * All dispatch is best-effort and fire-and-forget: each target catches its own
- * errors so one failing integration never blocks the others or the submission
- * response. Called from the submissions handler after a lead is persisted.
+ * Each target catches its own errors and returns a result so one failing
+ * integration never blocks the others or the submission response. Called from
+ * the submissions handler after a lead is persisted, and from the /test route.
  */
 export class IntegrationDispatchService {
   async dispatchNewLead(
     integrations: TenantIntegrations,
     payload: LeadDispatchPayload,
-  ): Promise<void> {
-    const tasks: Promise<void>[] = [];
+  ): Promise<DispatchResult[]> {
+    const tasks: Promise<DispatchResult>[] = [];
 
     if (integrations.ghl?.enabled && isHttpUrl(integrations.ghl.webhookUrl)) {
-      tasks.push(this.postWebhook('GHL', integrations.ghl.webhookUrl, this.toJson(payload)));
+      tasks.push(this.postWebhook('ghl', integrations.ghl.webhookUrl, this.toJson(payload)));
     }
 
     if (integrations.sheetsWebhook?.enabled && isHttpUrl(integrations.sheetsWebhook.webhookUrl)) {
       tasks.push(
-        this.postWebhook('SheetsWebhook', integrations.sheetsWebhook.webhookUrl, this.toJson(payload)),
+        this.postWebhook('sheetsWebhook', integrations.sheetsWebhook.webhookUrl, this.toJson(payload)),
       );
     }
 
@@ -50,7 +57,7 @@ export class IntegrationDispatchService {
       tasks.push(this.appendToGoogleSheet(gs, payload));
     }
 
-    await Promise.all(tasks);
+    return Promise.all(tasks);
   }
 
   /** Flat JSON body for webhook targets (GHL, Apps Script / Zapier). */
@@ -71,7 +78,11 @@ export class IntegrationDispatchService {
     };
   }
 
-  private async postWebhook(label: string, url: string, body: unknown): Promise<void> {
+  private async postWebhook(
+    target: DispatchResult['target'],
+    url: string,
+    body: unknown,
+  ): Promise<DispatchResult> {
     try {
       const res = await fetch(url, {
         method: 'POST',
@@ -80,20 +91,31 @@ export class IntegrationDispatchService {
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
       if (!res.ok) {
-        logger.warn({ status: res.status, label }, 'Integration webhook returned non-2xx');
+        logger.warn({ status: res.status, target }, 'Integration webhook returned non-2xx');
+        return { target, ok: false, detail: `Webhook returned HTTP ${res.status}` };
       }
+      return { target, ok: true, detail: 'Sent' };
     } catch (err) {
-      logger.error({ err, label }, 'Integration webhook POST failed');
+      const detail = (err as Error)?.message ?? 'request failed';
+      logger.error({ err, target }, 'Integration webhook POST failed');
+      return { target, ok: false, detail };
     }
   }
 
   private async appendToGoogleSheet(
     cfg: NonNullable<TenantIntegrations['googleSheets']>,
     payload: LeadDispatchPayload,
-  ): Promise<void> {
+  ): Promise<DispatchResult> {
+    const target = 'googleSheets' as const;
     try {
       const accessToken = await getGoogleAccessToken(cfg.refreshToken!);
-      if (!accessToken) return;
+      if (!accessToken) {
+        return {
+          target,
+          ok: false,
+          detail: 'Could not obtain a Google access token — reconnect Google Sheets.',
+        };
+      }
 
       const sheetName = cfg.sheetName?.trim() || 'Sheet1';
       const range = `${encodeURIComponent(sheetName)}!A1`;
@@ -124,9 +146,21 @@ export class IntegrationDispatchService {
       if (!res.ok) {
         const text = await res.text().catch(() => '');
         logger.warn({ status: res.status, body: text.slice(0, 300) }, 'Google Sheets append non-2xx');
+        // Extract the Google API error message for a readable diagnostic.
+        let msg = text.slice(0, 200);
+        try {
+          const j = JSON.parse(text);
+          msg = j?.error?.message ?? msg;
+        } catch {
+          /* keep raw text */
+        }
+        return { target, ok: false, detail: `Sheets API HTTP ${res.status}: ${msg}` };
       }
+      return { target, ok: true, detail: 'Row appended' };
     } catch (err) {
+      const detail = (err as Error)?.message ?? 'append failed';
       logger.error({ err }, 'Google Sheets append failed');
+      return { target, ok: false, detail };
     }
   }
 }

@@ -148,14 +148,30 @@ export default function IntegrationsPage() {
   });
 
   const testMutation = useMutation({
-    mutationFn: () => api.post<{ dispatched: boolean; targets: string[] }>('/integrations/test'),
+    mutationFn: () =>
+      api.post<{
+        dispatched: boolean;
+        targets: string[];
+        results: { target: string; ok: boolean; detail: string }[];
+      }>('/integrations/test'),
     onSuccess: (res) => {
       if (res.error) return showToast(res.error.message, 'error');
-      const targets = res.data?.targets ?? [];
-      showToast(
-        targets.length ? `Test lead sent to: ${targets.join(', ')}` : 'No integrations are enabled yet',
-        targets.length ? 'success' : 'error',
-      );
+      const results = res.data?.results ?? [];
+      // Also log so the full detail survives after the toast fades.
+      console.log('[EstimatorPro] test dispatch results:', results);
+      if (results.length === 0) {
+        return showToast('No integrations are enabled yet', 'error');
+      }
+      const label: Record<string, string> = {
+        ghl: 'GoHighLevel',
+        sheetsWebhook: 'Sheets webhook',
+        googleSheets: 'Google Sheets',
+      };
+      const anyFail = results.some((r) => !r.ok);
+      const msg = results
+        .map((r) => `${r.ok ? '✓' : '✗'} ${label[r.target] ?? r.target}: ${r.detail}`)
+        .join('  •  ');
+      showToast(msg, anyFail ? 'error' : 'success');
     },
     onError: () => showToast('Test dispatch failed', 'error'),
   });

@@ -110,7 +110,7 @@ export function createIntegrationRoutes(db: NodePgDatabase<typeof schema>): Hono
     if (integrations.sheetsWebhook?.enabled) targets.push('sheetsWebhook');
     if (integrations.googleSheets?.enabled && integrations.googleSheets.refreshToken) targets.push('googleSheets');
 
-    await dispatch.dispatchNewLead(integrations, {
+    const results = await dispatch.dispatchNewLead(integrations, {
       submissionId: `test-${randomUUID().slice(0, 8)}`,
       name: 'Test Lead',
       phone: '(555) 555-0100',
@@ -124,7 +124,7 @@ export function createIntegrationRoutes(db: NodePgDatabase<typeof schema>): Hono
       submittedAt: new Date(),
     });
 
-    return c.json({ data: { dispatched: true, targets }, error: null });
+    return c.json({ data: { dispatched: true, targets, results }, error: null });
   });
 
   // ── Native Google Sheets OAuth ─────────────────────────────────────────────

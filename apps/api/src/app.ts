@@ -64,13 +64,15 @@ app.use('*', async (c, next) => {
 // ── CORS ──────────────────────────────────────────────────────────────────────
 // Three distinct policies:
 //   1. Billing webhook (/api/v1/billing/webhook) — no CORS (Stripe calls server-to-server)
-//   2. Public widget paths — allow configured widget origins, no credentials
+//   2. Public widget paths — allow ANY origin (the widget embeds on arbitrary
+//      customer websites), no credentials
 //   3. Dashboard routes — allow dashboard origin only, credentials required
-const widgetOrigins = env.CORS_WIDGET_ORIGINS.split(',').map((o) => o.trim());
 
-// Public widget paths: submissions POST, analytics events POST, widget GET
+// Public widget paths: submissions POST, analytics events POST, widget GET.
+// These are embedded on third-party sites, so the origin is unknowable — allow all.
+// Safe because these endpoints are public and never use cookies/credentials.
 const widgetCorsMw = cors({
-  origin: widgetOrigins,
+  origin: '*',
   credentials: false,
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type'],
