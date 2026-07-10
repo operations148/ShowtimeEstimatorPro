@@ -947,12 +947,18 @@ const WIDGET_CSS = `
 .ep-caro-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.5); }
 .ep-caro-dot--on { background: #fff; }
 
-/* ── Collapsed question: text pills ── */
-.ep-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+/* ── Collapsed question: clean 2-column text pills ── */
+.ep-pills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 560px;
+  margin: 0 auto;
+}
 .ep-pill {
-  padding: 10px 18px; border-radius: 12px;
+  padding: 15px 16px; border-radius: 14px;
   border: 1px solid var(--ep-border); background: var(--ep-surface);
-  color: var(--ep-text); font-size: 13px; font-weight: 600; cursor: pointer;
+  color: var(--ep-text); font-size: 14px; font-weight: 600; text-align: center; cursor: pointer;
   transition: border-color 0.15s, background 0.15s, transform 0.15s;
 }
 .ep-pill:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--ep-brand) 50%, transparent); }
