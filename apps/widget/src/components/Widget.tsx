@@ -18,7 +18,14 @@ interface WidgetConfig {
   estimatorId: string;
   publicKey: string;
   title: string;
-  branding: { logoUrl?: string; primaryColor?: string; fontFamily?: string; bookingUrl?: string };
+  branding: {
+    logoUrl?: string;
+    primaryColor?: string;
+    backgroundColor?: string;
+    textColor?: string;
+    fontFamily?: string;
+    bookingUrl?: string;
+  };
   questions: Question[];
   tenantName: string;
   serviceAreaBehavior: 'block' | 'warn';
@@ -460,7 +467,15 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
   const fontFamily = config?.branding?.fontFamily
     ? `${config.branding.fontFamily}, system-ui, sans-serif`
     : 'system-ui, sans-serif';
-  const rootStyle = { fontFamily, ['--ep-brand' as string]: brandColor } as React.CSSProperties;
+  // Theme colors are branding-driven: --ep-bg / --ep-text override the defaults, and
+  // the rail/surface/border/muted shades derive from them (see WIDGET_CSS). This lets
+  // a tenant pick a light (white) or dark widget without a separate theme flag.
+  const rootStyle = {
+    fontFamily,
+    ['--ep-brand' as string]: brandColor,
+    ...(config?.branding?.backgroundColor ? { ['--ep-bg']: config.branding.backgroundColor } : {}),
+    ...(config?.branding?.textColor ? { ['--ep-text']: config.branding.textColor } : {}),
+  } as React.CSSProperties;
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (step === 'loading') {
@@ -772,12 +787,14 @@ export function Widget({ publicKey, apiUrl }: WidgetProps) {
 const WIDGET_CSS = `
 .ep-root, .ep-root * { box-sizing: border-box; }
 .ep-root {
+  /* Base theme colors — overridable per-tenant via inline --ep-bg / --ep-text. */
   --ep-bg: #0a1628;
-  --ep-rail: #081120;
-  --ep-surface: #0f2035;
-  --ep-border: #1e3a5f;
   --ep-text: #e2e8f0;
-  --ep-muted: #94a3b8;
+  /* Everything else derives from bg + text, so it works for a dark OR light bg. */
+  --ep-rail: color-mix(in srgb, var(--ep-bg) 90%, var(--ep-text) 10%);
+  --ep-surface: color-mix(in srgb, var(--ep-bg) 85%, var(--ep-text) 15%);
+  --ep-border: color-mix(in srgb, var(--ep-bg) 72%, var(--ep-text) 28%);
+  --ep-muted: color-mix(in srgb, var(--ep-text) 55%, var(--ep-bg) 45%);
   color: var(--ep-text);
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
@@ -831,12 +848,16 @@ const WIDGET_CSS = `
   grid-area: cta;
   background: var(--ep-rail);
   border-right: 1px solid var(--ep-border);
+  border-top: 1px solid color-mix(in srgb, var(--ep-brand) 32%, transparent);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 16px 20px;
+  /* Sit at the top of the bottom half (i.e. the vertical middle of the rail) so the
+     Reveal button + blurred price card group together near the center, under the
+     divider — not floating low. The logo stays centered in the top half. */
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 22px 20px 16px;
 }
 .ep-logo-img { max-width: 100%; max-height: 74px; object-fit: contain; display: block; }
 
@@ -867,16 +888,16 @@ const WIDGET_CSS = `
 .ep-price {
   position: relative;
   width: 100%;
-  background: #0a1e35;
+  background: var(--ep-surface);
   border: 1px solid color-mix(in srgb, var(--ep-brand) 30%, transparent);
   border-radius: 14px;
   padding: 18px 16px;
   text-align: center;
 }
 .ep-price-eyebrow { margin: 0 0 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ep-muted); }
-.ep-price-value { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+.ep-price-value { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: var(--ep-text); letter-spacing: -0.02em; }
 .ep-price-mo { margin: 0; font-size: 13px; color: var(--ep-muted); }
-.ep-price-fine { margin: 2px 0 0; font-size: 10px; color: #64748b; }
+.ep-price-fine { margin: 2px 0 0; font-size: 10px; color: var(--ep-muted); }
 .ep-price-note { margin: 12px 0 0; font-size: 12px; font-weight: 500; color: var(--ep-brand); }
 .ep-book {
   display: block; width: 100%; max-width: 220px; margin: 14px auto 0;
@@ -898,7 +919,7 @@ const WIDGET_CSS = `
    (grid items default to min-height:auto, which would overflow the shell). */
 .ep-main { grid-area: main; overflow-y: auto; min-height: 0; padding: 26px 22px 28px; }
 .ep-main::-webkit-scrollbar { width: 10px; }
-.ep-main::-webkit-scrollbar-thumb { background: #1b2f4d; border-radius: 8px; border: 3px solid var(--ep-bg); }
+.ep-main::-webkit-scrollbar-thumb { background: var(--ep-border); border-radius: 8px; border: 3px solid var(--ep-bg); }
 .ep-main-title { margin: 0 0 18px; text-align: center; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ep-muted); }
 
 .ep-question { margin-bottom: 24px; }
@@ -976,7 +997,7 @@ const WIDGET_CSS = `
   border: 1.5px solid var(--ep-border); border-radius: 9px; outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.ep-input::placeholder { color: #5b7396; }
+.ep-input::placeholder { color: var(--ep-muted); opacity: 0.8; }
 .ep-input:focus { border-color: var(--ep-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ep-brand) 25%, transparent); }
 .ep-input--error { border-color: #f87171; }
 .ep-err { margin: 4px 0 0; font-size: 11px; color: #f87171; }
@@ -989,9 +1010,9 @@ const WIDGET_CSS = `
 /* ── Messages (error / out-of-area) ── */
 .ep-message { max-width: 460px; margin: 0 auto; padding: 40px 28px; text-align: center; }
 .ep-message-icon { font-size: 38px; margin-bottom: 14px; }
-.ep-message h3 { margin: 0 0 10px; font-size: 20px; font-weight: 700; color: #fff; }
+.ep-message h3 { margin: 0 0 10px; font-size: 20px; font-weight: 700; color: var(--ep-text); }
 .ep-message p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--ep-muted); }
-.ep-message strong { color: #fff; }
+.ep-message strong { color: var(--ep-text); }
 .ep-message--error { color: #fca5a5; background: #3f0a0a; border: 1px solid #7f1d1d; border-radius: 10px; font-size: 14px; font-weight: 500; }
 
 /* ── Loading skeleton ── */

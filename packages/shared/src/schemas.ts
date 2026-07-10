@@ -2,12 +2,15 @@ import { z } from 'zod';
 
 // ── Branding (shared by tenant org branding + per-estimator branding) ──
 // logoUrl accepts an absolute URL (from POST /media/upload) or a data: URL.
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+
 export const brandingSchema = z.object({
   logoUrl: z.string().url().optional(),
-  primaryColor: z
-    .string()
-    .regex(/^#[0-9a-fA-F]{6}$/)
-    .optional(),
+  primaryColor: hexColor.optional(),
+  // Widget theme: background + text colors let a tenant make a light (white) or
+  // dark widget. The rail/surface/border/muted shades derive from these two.
+  backgroundColor: hexColor.optional(),
+  textColor: hexColor.optional(),
   fontFamily: z.string().max(100).optional(),
   // Optional booking/scheduling URL (e.g. a GHL calendar). When set, the widget
   // shows a "Book Your Appointment" CTA after the estimate is revealed.

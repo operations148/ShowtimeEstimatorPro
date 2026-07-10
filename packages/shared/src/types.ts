@@ -65,6 +65,8 @@ export interface Estimator {
 export interface EstimatorBranding {
   logoUrl?: string | null;
   primaryColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
   fontFamily?: string;
   bookingUrl?: string | null;
 }

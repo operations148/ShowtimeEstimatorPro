@@ -56,6 +56,13 @@ export function rateLimit(opts: {
         .returning({ count: rateLimitHits.count });
       count = row?.count ?? 1;
     } catch (err) {
+      // If the rate_limit_hits table doesn't exist yet (migration 0001 not applied),
+      // degrade to allow rather than break auth — but log loudly so it's fixed.
+      if ((err as { code?: string })?.code === '42P01') {
+        logger.error({ bucket }, 'rate-limiter: rate_limit_hits table missing — apply migration 0001. Allowing (degraded).');
+        await next();
+        return;
+      }
       logger.error({ err, bucket }, 'rate-limiter: store error');
       if (opts.failOpen) {
         await next();

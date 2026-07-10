@@ -11,7 +11,14 @@ interface TenantWithBranding {
   id: string;
   name: string;
   slug: string;
-  branding?: { logoUrl?: string; primaryColor?: string; fontFamily?: string; bookingUrl?: string } | null;
+  branding?: {
+    logoUrl?: string;
+    primaryColor?: string;
+    backgroundColor?: string;
+    textColor?: string;
+    fontFamily?: string;
+    bookingUrl?: string;
+  } | null;
 }
 
 const FONT_OPTIONS = [
@@ -45,16 +52,21 @@ function Toast({ message, type }: { message: string; type: 'success' | 'error' }
 // Widget preview component
 function WidgetPreview({
   primaryColor,
+  backgroundColor,
+  textColor,
   fontFamily,
   logoUrl,
   orgName,
 }: {
   primaryColor: string;
+  backgroundColor: string;
+  textColor: string;
   fontFamily: string;
   logoUrl: string;
   orgName: string;
 }) {
   const font = fontFamily || 'system-ui, sans-serif';
+  const muted = `color-mix(in srgb, ${textColor} 60%, ${backgroundColor} 40%)`;
   return (
     <div
       className="border border-gray-200 rounded-xl overflow-hidden shadow-sm"
@@ -70,8 +82,8 @@ function WidgetPreview({
         </div>
       </div>
 
-      <div className="bg-white p-5">
-        <p className="text-gray-700 font-medium text-sm mb-4">What type of service do you need?</p>
+      <div className="p-5" style={{ backgroundColor, color: textColor }}>
+        <p className="font-medium text-sm mb-4" style={{ color: textColor }}>What type of service do you need?</p>
         <div className="space-y-2 mb-4">
           {['Installation', 'Repair', 'Maintenance'].map((opt) => (
             <label key={opt} className="flex items-center gap-2.5 cursor-pointer group">
@@ -83,7 +95,7 @@ function WidgetPreview({
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }} />
                 )}
               </span>
-              <span className="text-sm text-gray-700">{opt}</span>
+              <span className="text-sm" style={{ color: opt === 'Installation' ? textColor : muted }}>{opt}</span>
             </label>
           ))}
         </div>
@@ -103,6 +115,8 @@ export default function BrandingPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [logoUrl, setLogoUrl] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#2563eb');
+  const [backgroundColor, setBackgroundColor] = useState('#0a1628');
+  const [textColor, setTextColor] = useState('#e2e8f0');
   const [fontFamily, setFontFamily] = useState('');
   const [bookingUrl, setBookingUrl] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -123,6 +137,8 @@ export default function BrandingPage() {
     if (!tenant) return;
     setLogoUrl(tenant.branding?.logoUrl ?? '');
     setPrimaryColor(tenant.branding?.primaryColor ?? '#2563eb');
+    setBackgroundColor(tenant.branding?.backgroundColor ?? '#0a1628');
+    setTextColor(tenant.branding?.textColor ?? '#e2e8f0');
     setFontFamily(tenant.branding?.fontFamily ?? '');
     setBookingUrl(tenant.branding?.bookingUrl ?? '');
   }, [tenant]);
@@ -166,6 +182,7 @@ export default function BrandingPage() {
   };
 
   const isValidHex = /^#[0-9a-fA-F]{6}$/.test(primaryColor);
+  const hex6 = (v: string) => /^#[0-9a-fA-F]{6}$/.test(v);
   const bookingTrimmed = bookingUrl.trim();
   const isValidBooking = bookingTrimmed === '' || /^https?:\/\/.+/i.test(bookingTrimmed);
 
@@ -174,6 +191,8 @@ export default function BrandingPage() {
       const branding: Record<string, string> = {};
       if (logoUrl) branding.logoUrl = logoUrl;
       if (isValidHex) branding.primaryColor = primaryColor;
+      if (hex6(backgroundColor)) branding.backgroundColor = backgroundColor;
+      if (hex6(textColor)) branding.textColor = textColor;
       if (fontFamily) branding.fontFamily = fontFamily;
       if (bookingTrimmed) branding.bookingUrl = bookingTrimmed;
       return api.patch('/tenants/me', { branding });
@@ -261,6 +280,47 @@ export default function BrandingPage() {
                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
+            <p className="text-xs text-gray-400 mt-1.5">Accent used for buttons, selected options, and highlights.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Widget background color</label>
+            <div className="flex gap-2 items-center">
+              <input
+                type="color"
+                value={hex6(backgroundColor) ? backgroundColor : '#0a1628'}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+                className="w-10 h-9 rounded border border-gray-300 cursor-pointer p-0.5"
+              />
+              <input
+                type="text"
+                value={backgroundColor}
+                onChange={(e) => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) setBackgroundColor(e.target.value); }}
+                maxLength={7}
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-1.5">The estimator's background. Use a light color (e.g. #ffffff) for a white widget, or a dark color for a dark theme. The section around the widget matches this.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Widget text color</label>
+            <div className="flex gap-2 items-center">
+              <input
+                type="color"
+                value={hex6(textColor) ? textColor : '#e2e8f0'}
+                onChange={(e) => setTextColor(e.target.value)}
+                className="w-10 h-9 rounded border border-gray-300 cursor-pointer p-0.5"
+              />
+              <input
+                type="text"
+                value={textColor}
+                onChange={(e) => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) setTextColor(e.target.value); }}
+                maxLength={7}
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-1.5">Question and label text. Use a dark color on a light background, or a light color on a dark background.</p>
           </div>
 
           <div>
@@ -313,6 +373,8 @@ export default function BrandingPage() {
           <h3 className="text-base font-medium text-gray-900 mb-4">Live preview</h3>
           <WidgetPreview
             primaryColor={isValidHex ? primaryColor : '#2563eb'}
+            backgroundColor={hex6(backgroundColor) ? backgroundColor : '#0a1628'}
+            textColor={hex6(textColor) ? textColor : '#e2e8f0'}
             fontFamily={fontFamily}
             logoUrl={logoUrl}
             orgName={tenant?.name ?? 'Your Company'}

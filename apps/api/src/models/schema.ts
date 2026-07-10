@@ -17,7 +17,7 @@ export const tenants = pgTable('tenants', {
   // Org-level branding — the default logo/color/font used across the dashboard
   // chrome and the tenant's widgets (per-estimator branding can override).
   branding: jsonb('branding')
-    .$type<{ logoUrl?: string; primaryColor?: string; fontFamily?: string; bookingUrl?: string }>()
+    .$type<{ logoUrl?: string; primaryColor?: string; backgroundColor?: string; textColor?: string; fontFamily?: string; bookingUrl?: string }>()
     .$defaultFn(() => ({})),
   // CRM / lead-routing integrations (GHL webhook, Google Sheets webhook, native
   // Google Sheets OAuth). Google OAuth tokens live here and are never exposed.
@@ -88,7 +88,7 @@ export const estimators = pgTable(
     status: text('status').notNull().default('draft'), // draft | published
     currentVersionId: text('current_version_id'),
     branding: jsonb('branding')
-      .$type<{ logoUrl?: string; primaryColor?: string; fontFamily?: string; bookingUrl?: string }>()
+      .$type<{ logoUrl?: string; primaryColor?: string; backgroundColor?: string; textColor?: string; fontFamily?: string; bookingUrl?: string }>()
       .$defaultFn(() => ({})),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
