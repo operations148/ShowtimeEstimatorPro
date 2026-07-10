@@ -96,6 +96,15 @@ mediaRoutes.post('/upload', requireAuth, async (c) => {
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const bytes = Buffer.from(await file.arrayBuffer());
 
+  // L1: don't trust the client-declared Content-Type — verify the file's magic bytes
+  // actually match an allowed image format, so a script/HTML can't be smuggled through.
+  if (!matchesImageMagic(bytes, file.type)) {
+    return c.json(
+      { data: null, error: { code: 'INVALID_FILE', message: 'File contents are not a valid PNG, JPEG, or WebP image.' } },
+      400,
+    );
+  }
+
   // ── Preferred path: Supabase Storage (works on serverless; durable) ─────────
   if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
     const bucket = env.SUPABASE_STORAGE_BUCKET;
@@ -156,3 +165,23 @@ mediaRoutes.post('/upload', requireAuth, async (c) => {
   const url = `http://localhost:${env.PORT}/uploads/${auth.tenantId}/${filename}`;
   return c.json({ data: { url }, error: null });
 });
+
+/**
+ * Verify a buffer's leading magic bytes match the declared image MIME type.
+ * PNG: 89 50 4E 47 · JPEG: FF D8 FF · WebP: "RIFF"…"WEBP".
+ */
+export function matchesImageMagic(buf: Buffer, mime: string): boolean {
+  if (buf.length < 12) return false;
+  if (mime === 'image/png') {
+    return buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
+  }
+  if (mime === 'image/jpeg') {
+    return buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+  }
+  if (mime === 'image/webp') {
+    return (
+      buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP'
+    );
+  }
+  return false;
+}

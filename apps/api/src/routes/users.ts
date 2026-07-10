@@ -40,6 +40,15 @@ export function createUserRoutes(
       );
     }
 
+    // Privilege-escalation guard: an admin may not create (or elevate to) an owner.
+    // Only an owner can grant the owner role. Assigned role must not exceed the actor's.
+    if (parsed.data.role === 'owner' && auth.role !== 'owner') {
+      return c.json(
+        { data: null, error: { code: 'FORBIDDEN', message: 'Only an owner can assign the owner role.' } },
+        403,
+      );
+    }
+
     const [user] = await db
       .insert(users)
       .values({ ...parsed.data, tenantId: auth.tenantId })

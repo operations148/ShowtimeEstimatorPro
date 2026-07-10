@@ -41,7 +41,7 @@ export function createSubmissionRoutes(
    * Public endpoint: called by the widget to submit an estimate.
    * Rate limited to 20 submissions per IP per minute.
    */
-  app.post('/', rateLimit({ windowMs: 60_000, max: 20, keyPrefix: 'sub' }), async (c) => {
+  app.post('/', rateLimit({ windowMs: 60_000, max: 20, keyPrefix: 'sub', failOpen: true }), async (c) => {
     const body = await c.req.json();
 
     // Honeypot spam trap: a hidden `company` field that legitimate users never

@@ -68,11 +68,25 @@ export default async function handler(
     if (cookies.length) res.setHeader('set-cookie', cookies);
     res.end(Buffer.from(await response.arrayBuffer()));
   } catch (err) {
+    // Never leak internal error detail (SQL errors, stack frames, filesystem paths)
+    // to clients in production. Log the full error server-side; return only a generic
+    // message plus a correlation id the operator can grep for.
+    const requestId = (globalThis.crypto?.randomUUID?.() ?? String(Date.now()));
+    // eslint-disable-next-line no-console
+    console.error(JSON.stringify({
+      level: 'error', msg: 'bridge handler error', requestId,
+      error: (err as Error)?.stack ?? String(err),
+    }));
+    const isProd = process.env.NODE_ENV === 'production';
     res.statusCode = 500;
     res.setHeader('content-type', 'application/json');
     res.end(JSON.stringify({
       data: null,
-      error: { code: 'HANDLER_ERROR', message: (err as Error)?.message ?? 'Unknown error' },
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: isProd ? 'Internal server error' : ((err as Error)?.message ?? 'Unknown error'),
+        requestId,
+      },
     }));
   }
 }

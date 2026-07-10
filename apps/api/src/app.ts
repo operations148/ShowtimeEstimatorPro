@@ -19,6 +19,7 @@ import { healthRoutes } from './routes/health';
 import { auditLogRoutes } from './routes/audit-logs';
 import { devRoutes } from './routes/dev';
 import { mediaRoutes } from './routes/media';
+import { cronRoutes } from './routes/cron';
 import { errorHandler } from './middleware/error-handler';
 import { csrf } from './middleware/csrf';
 
@@ -51,14 +52,18 @@ app.use('*', async (c, next) => {
   }
 });
 
-// ── Content-Security-Policy on all responses ──────────────────────────────────
-// This is an API server; the CSP is defensive (no HTML rendered).
+// ── Security headers on all responses ─────────────────────────────────────────
+// This is a JSON API (no HTML rendered), so the CSP is defensive. Also send HSTS,
+// nosniff, and a strict referrer policy (L2 / hardening #9).
 app.use('*', async (c, next) => {
   await next();
-  c.res.headers.set(
-    'Content-Security-Policy',
-    "default-src 'none'; frame-ancestors 'none'",
-  );
+  c.res.headers.set('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+  c.res.headers.set('X-Content-Type-Options', 'nosniff');
+  c.res.headers.set('Referrer-Policy', 'no-referrer');
+  c.res.headers.set('X-Frame-Options', 'DENY');
+  if (env.NODE_ENV === 'production') {
+    c.res.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  }
 });
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
@@ -159,6 +164,7 @@ app.route('/api/v1/billing', billingRoutes);
 app.route('/api/v1/exports', exportRoutes);
 app.route('/api/v1/audit-logs', auditLogRoutes);
 app.route('/api/v1/media', mediaRoutes);
+app.route('/api/v1/cron', cronRoutes);
 
 // ── Dev-only routes (never mounted in production) ──
 if (env.NODE_ENV !== 'production') {

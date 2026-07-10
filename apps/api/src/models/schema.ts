@@ -1,4 +1,4 @@
-import { pgTable, text, integer, timestamp, jsonb, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, timestamp, jsonb, boolean, index, primaryKey } from 'drizzle-orm/pg-core';
 import { randomUUID } from 'crypto';
 
 const createdAt = () =>
@@ -218,5 +218,28 @@ export const auditLogs = pgTable(
   (t) => ({
     tenantIdx: index('audit_logs_tenant_idx').on(t.tenantId),
     timestampIdx: index('audit_logs_timestamp_idx').on(t.timestamp),
+  }),
+);
+
+// ── Processed webhook events (C1: idempotent payment webhook processing) ──
+// The provider event id is the primary key; a duplicate delivery is a no-op insert.
+export const processedWebhookEvents = pgTable('processed_webhook_events', {
+  id: text('id').primaryKey(),
+  processedAt: timestamp('processed_at', { withTimezone: true }).notNull().$defaultFn(() => new Date()),
+});
+
+// ── Rate limit hits (H2: durable, cross-instance rate limiting) ──
+// One row per (bucket, window-start). `count` is incremented atomically. `windowStart`
+// makes old windows prunable. Bucket encodes the limiter key (e.g. "otp:1.2.3.4").
+export const rateLimitHits = pgTable(
+  'rate_limit_hits',
+  {
+    bucket: text('bucket').notNull(),
+    windowStart: timestamp('window_start', { withTimezone: true }).notNull(),
+    count: integer('count').notNull().default(0),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.bucket, t.windowStart] }),
+    windowIdx: index('rate_limit_window_idx').on(t.windowStart),
   }),
 );

@@ -7,6 +7,10 @@ const envSchema = z
     // pooler (port 6543); DIRECT_URL (port 5432) is used only for migrations.
     DATABASE_URL: z.string().min(1),
     DIRECT_URL: z.string().optional(),
+    // PEM of Supabase's CA. When set, the DB connection verifies the server cert
+    // (rejectUnauthorized: true) instead of accepting any cert — closes the MITM
+    // gap (M2). Download from the Supabase dashboard → Database → SSL config.
+    DATABASE_CA: z.string().optional(),
 
     // ── Session ─────────────────────────────────────────────────────────────
     SESSION_SECRET: z.string().min(32),

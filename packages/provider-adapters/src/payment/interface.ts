@@ -13,6 +13,8 @@ export interface SubscriptionInfo {
 }
 
 export interface WebhookEvent {
+  /** Provider event id, used for idempotent processing (dedupe). */
+  id?: string;
   type: string;
   data: {
     subscriptionId: string;
@@ -30,6 +32,12 @@ export interface WebhookEvent {
  * Implement this for Stripe, Paddle, LemonSqueezy, etc.
  */
 export interface PaymentProvider {
+  /**
+   * Whether constructWebhookEvent cryptographically verifies the request signature.
+   * Providers that do NOT verify (e.g. the mock) must never process webhooks in
+   * production — the webhook route enforces this to avoid an unauthenticated write.
+   */
+  readonly verifiesSignatures: boolean;
   createCheckoutSession(params: CreateSubscriptionParams): Promise<{ url: string }>;
   getSubscription(externalId: string): Promise<SubscriptionInfo>;
   constructWebhookEvent(rawBody: string, signature: string): Promise<WebhookEvent>;

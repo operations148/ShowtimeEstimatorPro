@@ -1,7 +1,9 @@
 import { Hono } from 'hono';
+import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { analyticsEventSchema } from '@repo/shared';
 import { AnalyticsService } from '../services/analytics.service';
+import { estimators } from '../models/schema';
 import { requireAuth } from '../middleware/auth';
 import { rateLimit } from '../middleware/rate-limiter';
 import { db as realDb } from '../models/db';
@@ -15,7 +17,7 @@ export function createAnalyticsRoutes(
 
   // Track event (public, called by widget)
   // Rate limited to 60 events per IP per minute.
-  app.post('/events', rateLimit({ windowMs: 60_000, max: 60, keyPrefix: 'analytics' }), async (c) => {
+  app.post('/events', rateLimit({ windowMs: 60_000, max: 60, keyPrefix: 'analytics', failOpen: true }), async (c) => {
     const body = await c.req.json();
     const parsed = analyticsEventSchema.safeParse(body);
     if (!parsed.success) {
@@ -25,18 +27,26 @@ export function createAnalyticsRoutes(
       );
     }
 
-    // tenantId is resolved from the body; production should look it up from the estimator
-    //
+    // SECURITY: never trust a client-supplied tenantId — it would let anyone inject
+    // analytics rows against another tenant. Resolve the tenant authoritatively from
+    // the estimator the event references. Unknown estimator → silently ignore.
+    const [est] = await db
+      .select({ tenantId: estimators.tenantId })
+      .from(estimators)
+      .where(eq(estimators.id, parsed.data.estimatorId))
+      .limit(1);
+
+    if (!est) {
+      return c.json({ data: { tracked: false }, error: null });
+    }
+
     // Awaited (not fire-and-forget): on Vercel's serverless runtime the function is
     // frozen the moment the response is sent, so any unawaited async work in flight
     // never completes — and worse, it can leave a DB connection checked out of the
-    // pool forever, hanging every subsequent request on that instance. Errors are
-    // still swallowed so a tracking failure never fails the widget's request.
+    // pool forever. Errors are still swallowed so a tracking failure never fails the
+    // widget's request.
     await analyticsService
-      .track({
-        tenantId: (body as Record<string, unknown>).tenantId as string ?? 'unknown',
-        ...parsed.data,
-      })
+      .track({ tenantId: est.tenantId, ...parsed.data })
       .catch(() => {});
 
     return c.json({ data: { tracked: true }, error: null });

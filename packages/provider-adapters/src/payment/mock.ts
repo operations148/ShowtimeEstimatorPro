@@ -6,6 +6,9 @@ import type {
 } from './interface';
 
 export class MockPaymentProvider implements PaymentProvider {
+  // The mock does NOT verify signatures — the webhook route must refuse to process
+  // mock webhooks in production (see billing.ts). Dev/test only.
+  readonly verifiesSignatures = false;
   private subscriptions = new Map<string, SubscriptionInfo>();
 
   async createCheckoutSession(params: CreateSubscriptionParams): Promise<{ url: string }> {

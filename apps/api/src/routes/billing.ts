@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { subscriptions } from '../models/schema';
+import { subscriptions, processedWebhookEvents } from '../models/schema';
 import type * as schema from '../models/schema';
 import { requireAuth } from '../middleware/auth';
 import { auditLog } from '../middleware/audit';
@@ -56,6 +56,19 @@ export function createBillingRoutes(
   //   subscription.updated  — update status + period end by externalId
   //   subscription.deleted  — set status to 'canceled' by externalId
   app.post('/webhook', async (c) => {
+    // SECURITY (C1): the mock provider does not verify signatures. Refuse to process
+    // webhooks in production unless the active provider cryptographically verifies the
+    // request — otherwise this is an unauthenticated write to the subscriptions table
+    // (grant self a subscription / cancel any tenant's by externalId). The signature
+    // is the authentication for this CSRF-exempt endpoint.
+    if (env.NODE_ENV === 'production' && !paymentProvider.verifiesSignatures) {
+      logger.error('billing webhook rejected: no signature-verifying payment provider configured in production');
+      return c.json(
+        { data: null, error: { code: 'WEBHOOK_DISABLED', message: 'Webhook processing is not available.' } },
+        503,
+      );
+    }
+
     const rawBody = await c.req.text();
     const signature = c.req.header('stripe-signature') ?? '';
 
@@ -68,6 +81,18 @@ export function createBillingRoutes(
         { data: null, error: { code: 'WEBHOOK_ERROR', message: 'Invalid webhook signature.' } },
         400,
       );
+    }
+
+    // Idempotency: process each provider event at most once (dedupe by event id).
+    if (event.id) {
+      const inserted = await db
+        .insert(processedWebhookEvents)
+        .values({ id: event.id })
+        .onConflictDoNothing()
+        .returning({ id: processedWebhookEvents.id });
+      if (inserted.length === 0) {
+        return c.json({ data: { received: true, duplicate: true }, error: null });
+      }
     }
 
     try {

@@ -114,8 +114,16 @@ export class ExportService {
  * or newline. Double-quotes within a field are escaped by doubling them.
  */
 export function escapeCsv(value: string): string {
-  if (/[,"\r\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+  // Neutralize spreadsheet formula injection: a cell beginning with = + - @ (or a
+  // leading tab/CR) is executed as a formula by Excel / Google Sheets. A lead could
+  // submit a name like `=HYPERLINK(...)` or a DDE payload. Prefix such values with a
+  // single quote so the spreadsheet treats them as literal text.
+  let v = value;
+  if (/^[=+\-@\t\r]/.test(v)) {
+    v = `'${v}`;
   }
-  return value;
+  if (/[,"\r\n]/.test(v)) {
+    return `"${v.replace(/"/g, '""')}"`;
+  }
+  return v;
 }

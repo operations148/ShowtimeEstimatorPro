@@ -317,5 +317,7 @@ const authService = new AuthService(
 );
 
 export const authRoutes = new Hono();
+// Auth limiters fail CLOSED (no failOpen) — a limiter outage must not enable brute force.
 authRoutes.use('/otp/request', rateLimit({ windowMs: 60 * 60 * 1000, max: 10, keyPrefix: 'otp' }));
+authRoutes.use('/otp/verify', rateLimit({ windowMs: 60 * 1000, max: 10, keyPrefix: 'otpv' }));
 authRoutes.route('/', createAuthRoutes(authService));
